@@ -1,0 +1,119 @@
+---
+title: "d"
+format: pdf
+---
+
+
+```{r}
+#| ;
+candidate_long <- ep_cn |> 
+    mutate(across(9:32, ~ if_else(is.na(.), 0, .)),
+           across(c(spoiled_epalt = spoiled.abs_ep, 
+                    putin_epalt = putin.abs_ep, 
+                    davankov_epalt = davankov.abs_ep),
+                  ~ ./(spoiled.abs_ep + putin.abs_ep + davankov.abs_ep
+                       + haritonov.abs_ep + slutskiy.abs_ep
+                       + removed_or_destroyed.abs))) |> 
+    pivot_longer(cols = c(spoiled_cec, putin_cec, davankov_cec,
+                          spoiled_epalt, putin_epalt, davankov_epalt),
+                 names_to = c("candidate", ".value"), 
+                 names_sep = "_") |> 
+    mutate(candidate = factor(candidate, 
+                              levels = c("putin", "davankov", "spoiled"),
+                              labels = c("Putin", "Davankov", "Spoiled")),
+           diff = cec - epalt) |> 
+    group_by(city_en) |> 
+    mutate(diff_sort = sum(abs(diff)))
+    
+  
+  ggplot(candidate_long, aes(y = cec*100, x = epalt*100)) +
+    geom_point(size = 1, alpha = 0.6) +
+    geom_smooth(method = "lm", color = "#006f3c") +
+    geom_text_repel(aes(label = city_en), size = 3, alpha = 0.6, 
+                    max.overlaps = 7) +
+    facet_wrap(~ candidate, scales="free") +
+    labs(y = "Official Percent of Votes\n",
+         x = "\nExit Poll Percent of Answers",
+         title = "Official Central Election Committee and `Voting Abroad` Exit Poll results of 2024 Russian Presidential Election",
+         subtitle = "Exit Poll results don't include `Declined to Answer`",
+         caption = "Sources:\n`Vote Abroad` initiative - voteabroad.info\nIvan Shpilkin's Telegram channel - t.me/nevybory") +
+    theme_bw()
+  
+  ggplot(candidate_long, 
+         aes(y = diff*100, x = reorder(city_en, -diff_sort),
+             color = candidate)) +
+    geom_segment(aes(y = 0,
+                     yend = diff*100, 
+                     x = reorder(city_en, -diff_sort), 
+                     xend = reorder(city_en, -diff_sort)),
+                 color = "lightgrey") +
+    annotate("segment", x = 1, xend = 65, y = 0, yend = 0, 
+             color = "lightgrey") +
+    geom_point(size = 2) +
+    scale_color_manual(values = c("#bf212f", "#264b96", "#006f3c")) +
+    scale_y_continuous(limits = c(-60, 70),
+                       breaks = seq(-60, 70, 10)) +
+    labs(title = "Difference between Official Central Election Committee and\n`Voting Abroad` Exit Poll results of 2024 Russian Presidential Election",
+         subtitle = "Exit Poll results don't include `Declined to Answer`",
+         y = "\nPercentage Point Difference",
+         x = "",
+         color = "Result for:",
+         caption = "Sources:\n`Vote Abroad` initiative - voteabroad.info\nIvan Shpilkin's Telegram channel - t.me/nevybory") +
+    theme_minimal() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_text(angle = 45))
+    
+  
+  candidate_long1 <- ep_cn |> 
+    mutate(across(9:32, ~ if_else(is.na(.), 0, .)),
+           across(c(spoiled_epalt = spoiled.abs_ep, 
+                    davankov_epalt = davankov.abs_ep),
+                  ~ ./(spoiled.abs_ep + putin.abs_ep + davankov.abs_ep
+                       + haritonov.abs_ep + slutskiy.abs_ep
+                       + removed_or_destroyed.abs + declined_to_answer.abs)),
+           putin_epalt = (putin.abs_ep + declined_to_answer.abs)
+           /(spoiled.abs_ep + putin.abs_ep + davankov.abs_ep
+           + haritonov.abs_ep + slutskiy.abs_ep + declined_to_answer.abs
+           + removed_or_destroyed.abs)) |> 
+    pivot_longer(cols = c(spoiled_cec, putin_cec, davankov_cec,
+                          spoiled_epalt, putin_epalt, davankov_epalt),
+                 names_to = c("candidate", ".value"), 
+                 names_sep = "_") |> 
+    mutate(candidate = factor(candidate, 
+                              levels = c("putin", "davankov", "spoiled"),
+                              labels = c("Putin + Declined", "Davankov", 
+                                         "Spoiled")),
+           diff = cec - epalt) |> 
+    group_by(city_en) |> 
+    mutate(diff_sort = if_else(candidate == "Putin + Declined",
+                               diff, NA)) |> 
+    fill(diff_sort, .direction = "updown")
+    
+  
+  ggplot(candidate_long1, 
+         aes(y = diff*100, x = reorder(city_en, -diff_sort),
+             color = candidate)) +
+    geom_segment(aes(y = 0,
+                     yend = diff*100, 
+                     x = reorder(city_en, -diff_sort), 
+                     xend = reorder(city_en, -diff_sort)),
+                 color = "lightgrey") +
+    annotate("segment", x = 1, xend = 65, y = 0, yend = 0, 
+             color = "lightgrey") +
+    geom_point(size = 2) +
+    scale_color_manual(values = c("#bf212f", "#264b96", "#006f3c")) +
+    scale_y_continuous(limits = c(-60, 70),
+                       breaks = seq(-60, 70, 10)) +
+    labs(title = "Difference between Official Central Election Committee and\n`Voting Abroad` Exit Poll results of 2024 Russian Presidential Election",
+         subtitle = "Exit Poll results include `Declined to Answer`",
+         y = "\nPercentage Point Difference",
+         x = "",
+         color = "Result for:",
+         caption = "Sources:\n`Vote Abroad` initiative - voteabroad.info\nIvan Shukshin's Telegram channel - t.me/nevybory") +
+    theme_minimal() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_text(angle = 45))
+    
+```

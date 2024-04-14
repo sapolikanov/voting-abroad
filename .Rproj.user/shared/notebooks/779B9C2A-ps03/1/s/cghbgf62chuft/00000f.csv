@@ -1,0 +1,6 @@
+"0","#| label: multi-level imputation with city fixed effects - results"
+"0","#| eval: false"
+"0",""
+"0","ms_fit2 <- pool(fit2)"
+"0",""
+"0","save(ms_fit2, file = ""ms_fit2.RData"")"

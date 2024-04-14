@@ -1,0 +1,5 @@
+"0","save(fit2.ml, file = ""fit2.ml.RData"")
+"
+"2","Error in save(fit2.ml, file = ""fit2.ml.RData"") : 
+  object ‘fit2.ml’ not found
+"

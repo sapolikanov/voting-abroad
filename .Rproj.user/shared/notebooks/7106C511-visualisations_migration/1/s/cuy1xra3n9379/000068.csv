@@ -1,0 +1,16 @@
+"0","#| label: raw graphs"
+"0","data_plot %>% "
+"0","  summarise(across(everything(), ~ sum(is.na(.x))))"
+"1","Simple feature collection with 1 feature and 10 fields"
+"1","
+"
+"1","Geometry type: MULTIPOLYGON
+"
+"1","Dimension:     XY
+"
+"1","Bounding box:  "
+"1","xmin: -180 ymin: -89.99893 xmax: 180 ymax: 83.59961"
+"1","
+"
+"1","Geodetic CRS:  WGS 84
+"

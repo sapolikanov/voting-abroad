@@ -1,0 +1,195 @@
+---
+title: "Vizualizations"
+author: "Polikanov Stepan"
+project:
+     execute-dir: project
+format:
+  pdf:
+    code_download: true
+    fontsize: 11pt
+    highlight-style: kate
+    fig-width: 10
+    fig-height: 6
+    include-in-header:
+      - text: |
+          \addtokomafont{disposition}{\rmfamily} 
+          \AddToHook{env/Highlighting/begin}{\scriptsize} 
+          \usepackage{float} 
+embed-resources: true
+execute: 
+  echo: true
+  warning: false
+  error: false
+  message: false
+---
+
+```{r}
+#| label: setup
+
+# Manage packages
+
+  ## Package list
+  packages <- c("readxl", "tidyverse", "lubridate", "CGPfunctions",
+                "rnaturalearth", "rnaturalearthdata", "sf", "classInt")
+  
+  ## Install packages not yet installed
+  installed_packages <- packages %in% rownames(installed.packages())
+  if (any(installed_packages == FALSE)) {
+    install.packages(packages[!installed_packages])
+  }
+  
+  ## Load packages
+  invisible(lapply(packages, library, character.only = TRUE))
+  
+# Set options
+options(scipen = 999)
+
+  
+```
+
+```{r}
+#| label: Data
+
+source(here::here("scripts", "data_building.R"))
+```
+
+```{r}
+#| label: tbd
+#| eval: false
+
+merged |> 
+  select(countryname = countryname_en, countrycode = countrycode_n,
+         grep(x = names(merged), pattern = "all_|male_|female_")) |> 
+  pivot_longer(cols = c(3:23), names_to = c("sex", "year"), names_sep = "_",
+               values_to = "migrants") |>
+  mutate(year = as.factor(year),
+  area = countrycode(countrycode, origin = "iso3n",
+                            destination = "un.region.name")) |> 
+  drop_na() |> 
+  filter(sex == "all") |> 
+  group_by(area, year) |> 
+  summarize(migrants = round(sum(migrants)/1000, 0)) |> 
+  newggslopegraph(year, migrants, Grouping = area)
+  
+```
+
+```{r}
+#| label: world prep
+
+world <- ne_countries(scale = "medium", returnclass = "sf") |> 
+  mutate(countrycode_n = countrycode(as.numeric(iso_n3_eh), origin = "iso3n",
+                                     destination = "iso3n")) |> 
+  select(name, subregion, countrycode_n, geometry)
+
+data_plot <- merged |> 
+  drop_na(countrycode_n) |> 
+  group_by(countrycode_n) |> 
+  summarize(all_2010 = all_2010,
+            all_2015 = all_2015,
+            diff2015_2010 = diff2015_2010,
+            diff2020_2015 = diff2020_2015,
+            across(c(share.raw_afterfebref, 
+                     share.raw_after2014ref, share.raw_2019ref),
+                   ~ if_else(is.nan(mean(., na.rm = T)), NA, mean(., na.rm = T))),
+            .groups = "drop") |> 
+  distinct() |> 
+  full_join(world, by = "countrycode_n") |> 
+  st_as_sf()
+```
+
+```{r}
+#| label: world graphs 
+
+data_plot |> 
+  mutate(all_cat = cut(all_2010, 
+                       classIntervals(c(min(data_plot$all_2010) - .00001, 
+                                        data_plot$all_2010), 
+                                      n = 7, style = "quantile")$brks)) |> 
+  ggplot(aes(fill = all_cat)) +
+    geom_sf() +
+    scale_fill_viridis_d(option = "G", na.translate = F, direction = -1) + 
+    labs(title = "Number of migrants with Russian origin in 2010",
+         subtitle = "For a sample of countries where 2024 voting was possible",
+         fill = "Migrants from Russia,\nthousands of people:") +
+    theme_void() +
+    theme(legend.position = "bottom") +
+    coord_sf(ylim = c(-55, 90))
+
+data_plot |> 
+  mutate(diff2015_2010_cat = cut(diff2015_2010, 
+                       classIntervals(c(min(data_plot$diff2015_2010) - .00001, 
+                                        data_plot$diff2015_2010), 
+                                      n = 7, style = "quantile")$brks)) |> 
+
+  ggplot(aes(fill = diff2015_2010_cat)) +
+    geom_sf() +
+    scale_fill_viridis_d(option = "G", na.translate = F, direction = -1) + 
+    labs(title = "Change in the number of migrants with Russian origin between 2010 and 2015",
+         subtitle = "Normalized by 2010 number of migrants,\nfor a sample of countries where 2024 voting was possible",
+         fill = "Migrants from Russia,\nthousands of people:") +
+    theme_void() +
+    theme(legend.position = "bottom") +
+    coord_sf(ylim = c(-55, 90))
+
+data_plot |> 
+  mutate(diff2020_2015_cat = cut(diff2020_2015, 
+                       classIntervals(c(min(data_plot$diff2020_2015) - .00001, 
+                                        data_plot$diff2020_2015), 
+                                      n = 7, style = "quantile")$brks)) |> 
+
+  ggplot(aes(fill = diff2020_2015_cat)) +
+    geom_sf() +
+    scale_fill_viridis_d(option = "G", na.translate = F, direction = -1) + 
+    labs(title = "Change in the number of migrants with Russian origin between 2015 and 2020",
+         subtitle = "Normalized by 2010 number of migrants,\nfor a sample of countries where 2024 voting was possible",
+         fill = "Migrants from Russia,\nthousands of people:") +
+    theme_void() +
+    theme(legend.position = "bottom") +
+    coord_sf(ylim = c(-55, 90))
+
+
+```
+
+```{r}
+#| label: raw graphs
+data_plot %>% 
+  summarise(across(everything(), ~ sum(is.na(.x))))
+
+data_raw <- data_plot |> 
+  pivot_longer(cols = c(share.raw_after2014ref, 
+                        share.raw_2019ref, share.raw_afterfebref),
+               names_to = "when")
+
+data_raw |> 
+  mutate(value = cut(value, 
+                     classIntervals(c(min(data_raw$value) - .00001, 
+                                        data_raw$value), 
+                                      n = 10, style = "quantile")$brks)) |> 
+  ggplot(aes(fill = value)) +
+    geom_sf() +
+    scale_fill_manual(values = c(
+      '#790000', '#9b1517', '#bc2a2e', '#db4246', '#eb6766', '#fa8983', 
+      '#fcaea8', '#f9d3d0', '#4160ad', '#20468f'), 
+      na.translate = F) + 
+    labs(title = "Self-reported migration times per country, compared to 2014",
+         subtitle = "By decile, for a sample where exit polls were conducted\n", 
+         fill = "Times less/more than before 2014") +
+    facet_wrap(~ factor(when, levels = c("share.raw_after2014ref", 
+                                         "share.raw_2019ref", 
+                                         "share.raw_afterfebref"),
+                        labels = c("After 2014 but before 2019",
+                                   "After 2019 but before 2022",
+                                   "After 2022")),
+               nrow = 2) +
+    theme_void() +
+    theme(legend.position = "bottom") +
+    coord_sf(ylim = c(-55, 90))
+```
+
+Variables:
+
+Bilateral - drop
+Stock - full sample, 2010 baseline, change 2010-2015 and 2015-2020
+EP - reduced sample, self-reported (much more accurate), share for each period and change compared to 2014 (compared to previous period?)
+
+Need institutional predictors of this? -- but probably different hypotheses then? This is for a migration paper not this one. Long-run voting? Soc stratification?

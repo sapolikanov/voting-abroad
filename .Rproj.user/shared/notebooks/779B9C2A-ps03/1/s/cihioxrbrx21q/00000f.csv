@@ -1,0 +1,185 @@
+"0","#| label: multi-level multinomial model with imputation - running multinom"
+"0","#| results: hide"
+"0","#| eval: false"
+"0",""
+"0","fit2_ml <- with(imp2, multinom(as.factor(vote) ~ as.factor(sex)"
+"0","                                 + as.factor(age_bin) "
+"0","                                 + as.factor(time_to_vs.less_than_hour)"
+"0","                                 + as.factor(out_of_Russia_time)"
+"0","                                 + as.factor(result_trust_bin)"
+"0","                                 + as.factor(city_en)))"
+"1","# weights: "
+"1"," "
+"1","468"
+"1"," ("
+"1",""
+"1","385"
+"1",""
+"1"," variable)
+"
+"1","initial  value 100888.600434 
+"
+"1","iter  10 value 51348.129731
+"
+"1","iter  20 value 48248.505963
+"
+"1","iter  30 value 45024.256813
+"
+"1","iter  40 value 43152.363339
+"
+"1","iter  50 value 41476.508751
+"
+"1","iter  60 value 41023.112517
+"
+"1","iter  70 value 40750.730428
+"
+"1","iter  80 value 40574.059363
+"
+"1","iter  90 value 40369.656812
+"
+"1","iter 100 value 40241.871312
+"
+"1","final  value 40241.871312 
+"
+"1","stopped after 100 iterations
+"
+"1","# weights: "
+"1"," "
+"1","468"
+"1"," ("
+"1",""
+"1","385"
+"1",""
+"1"," variable)
+"
+"1","initial  value 100888.600434 
+"
+"1","iter  10 value 51367.999574
+"
+"1","iter  20 value 48554.804183
+"
+"1","iter  30 value 45195.097412
+"
+"1","iter  40 value 43183.065125
+"
+"1","iter  50 value 41617.285917
+"
+"1","iter  60 value 41134.818960
+"
+"1","iter  70 value 40823.835593
+"
+"1","iter  80 value 40630.391387
+"
+"1","iter  90 value 40459.259728
+"
+"1","iter 100 value 40313.430737
+"
+"1","final  value 40313.430737 
+"
+"1","stopped after 100 iterations
+"
+"1","# weights: "
+"1"," "
+"1","468"
+"1"," ("
+"1",""
+"1","385"
+"1",""
+"1"," variable)
+"
+"1","initial  value 100888.600434 
+"
+"1","iter  10 value 51236.818212
+"
+"1","iter  20 value 48350.852389
+"
+"1","iter  30 value 44842.219272
+"
+"1","iter  40 value 43003.224972
+"
+"1","iter  50 value 41549.249730
+"
+"1","iter  60 value 41070.013903
+"
+"1","iter  70 value 40766.590108
+"
+"1","iter  80 value 40562.077099
+"
+"1","iter  90 value 40391.856864
+"
+"1","iter 100 value 40278.510730
+"
+"1","final  value 40278.510730 
+"
+"1","stopped after 100 iterations
+"
+"1","# weights: "
+"1"," "
+"1","468"
+"1"," ("
+"1",""
+"1","385"
+"1",""
+"1"," variable)
+"
+"1","initial  value 100888.600434 
+"
+"1","iter  10 value 51185.760433
+"
+"1","iter  20 value 48145.940509
+"
+"1","iter  30 value 44593.551121
+"
+"1","iter  40 value 42861.371811
+"
+"1","iter  50 value 41378.522141
+"
+"1","iter  60 value 40982.383945
+"
+"1","iter  70 value 40710.913877
+"
+"1","iter  80 value 40522.416805
+"
+"1","iter  90 value 40358.993126
+"
+"1","iter 100 value 40240.351136
+"
+"1","final  value 40240.351136 
+"
+"1","stopped after 100 iterations
+"
+"1","# weights: "
+"1"," "
+"1","468"
+"1"," ("
+"1",""
+"1","385"
+"1",""
+"1"," variable)
+"
+"1","initial  value 100888.600434 
+"
+"1","iter  10 value 51097.526831
+"
+"1","iter  20 value 48285.207538
+"
+"1","iter  30 value 44879.311808
+"
+"1","iter  40 value 42912.373364
+"
+"1","iter  50 value 41432.388868
+"
+"1","iter  60 value 41005.371699
+"
+"1","iter  70 value 40694.157282
+"
+"1","iter  80 value 40517.467617
+"
+"1","iter  90 value 40376.629236
+"
+"1","iter 100 value 40246.437917
+"
+"1","final  value 40246.437917 
+"
+"1","stopped after 100 iterations
+"

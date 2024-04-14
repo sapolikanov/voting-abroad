@@ -1,0 +1,18 @@
+"0","data_plot <- merged |> 
+  drop_na(countrycode_n) |> 
+  group_by(countrycode_n) |> 
+  summarize(all_2010 = all_2010,
+            all_2015 = all_2015,
+            diff2015_2010 = diff2015_2010,
+            diff2020_2015 = diff2020_2015,
+            across(c(share.raw_afterfebref, 
+                     share.raw_after2014ref, share.raw_2019ref),
+                   ~ if_else(is.nan(mean(., na.rm = T)), NA, mean(., na.rm = T))),
+            .groups = ""drop"") |> 
+  distinct() |> 
+  full_join(world, by = ""countrycode_n"") |> 
+  st_as_sf()
+"
+"2","Warning: Returning more (or less) than 1 row per `summarise()` group was deprecated in dplyr 1.1.0.
+Please use `reframe()` instead.
+When switching from `summarise()` to `reframe()`, remember that `reframe()` always returns an ungrouped data frame and adjust accordingly."

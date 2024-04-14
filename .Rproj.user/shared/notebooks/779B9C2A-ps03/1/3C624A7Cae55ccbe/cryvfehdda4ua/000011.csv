@@ -1,0 +1,171 @@
+"0","fit1 <- pool(with(imp1, multinom(as.factor(vote) ~ as.factor(sex)
+                                 + as.factor(age_bin) 
+                                 + as.factor(time_to_vs.less_than_hour)
+                                 + as.factor(out_of_Russia_time)
+                                 + as.factor(result_trust_bin))))
+"
+"1","# weights: "
+"1"," "
+"1","84"
+"1"," ("
+"1",""
+"1","65"
+"1",""
+"1"," variable)
+"
+"1","initial  value 100888.600434 
+"
+"1","iter  10 value 48294.537707
+"
+"1","iter  20 value 44485.998743
+"
+"1","iter  30 value 40967.032740
+"
+"1","iter  40 value 39900.836865
+"
+"1","iter  50 value 38922.785552
+"
+"1","iter  60 value 38470.135812
+"
+"1","iter  70 value 38117.933406
+"
+"1","iter  80 value 38039.426536
+"
+"1","iter  90 value 38023.139515
+"
+"1","final  value 38023.138765 
+"
+"1","converged
+"
+"1","# weights: "
+"1"," "
+"1","84"
+"1"," ("
+"1",""
+"1","65"
+"1",""
+"1"," variable)
+"
+"1","initial  value 100888.600434 
+"
+"1","iter  10 value 48490.445834
+"
+"1","iter  20 value 44560.257294
+"
+"1","iter  30 value 40857.335081
+"
+"1","iter  40 value 39806.099265
+"
+"1","iter  50 value 38889.789230
+"
+"1","iter  60 value 38379.955072
+"
+"1","iter  70 value 38102.208867
+"
+"1","iter  80 value 38035.687653
+"
+"1","iter  90 value 38009.794810
+"
+"1","final  value 38009.790545 
+"
+"1","converged
+"
+"1","# weights: "
+"1"," "
+"1","84"
+"1"," ("
+"1",""
+"1","65"
+"1",""
+"1"," variable)
+"
+"1","initial  value 100888.600434 
+"
+"1","iter  10 value 48402.065884
+"
+"1","iter  20 value 44603.600150
+"
+"1","iter  30 value 41114.413053
+"
+"1","iter  40 value 39957.378923
+"
+"1","iter  50 value 39082.978925
+"
+"1","iter  60 value 38510.125046
+"
+"1","iter  70 value 38138.943535
+"
+"1","iter  80 value 38081.307553
+"
+"1","iter  90 value 38061.864155
+"
+"1","final  value 38061.861897 
+"
+"1","converged
+"
+"1","# weights: "
+"1"," "
+"1","84"
+"1"," ("
+"1",""
+"1","65"
+"1",""
+"1"," variable)
+"
+"1","initial  value 100888.600434 
+"
+"1","iter  10 value 48420.122956
+"
+"1","iter  20 value 44661.786030
+"
+"1","iter  30 value 41142.466070
+"
+"1","iter  40 value 39993.919329
+"
+"1","iter  50 value 39122.382257
+"
+"1","iter  60 value 38430.169123
+"
+"1","iter  70 value 38145.292014
+"
+"1","iter  80 value 38093.231446
+"
+"1","iter  90 value 38081.225233
+"
+"1","final  value 38081.222879 
+"
+"1","converged
+"
+"1","# weights: "
+"1"," "
+"1","84"
+"1"," ("
+"1",""
+"1","65"
+"1",""
+"1"," variable)
+"
+"1","initial  value 100888.600434 
+"
+"1","iter  10 value 48440.435227
+"
+"1","iter  20 value 44704.875303
+"
+"1","iter  30 value 41165.336862
+"
+"1","iter  40 value 40149.158785
+"
+"1","iter  50 value 39127.442291
+"
+"1","iter  60 value 38462.370586
+"
+"1","iter  70 value 38141.046265
+"
+"1","iter  80 value 38068.900624
+"
+"1","iter  90 value 38053.530008
+"
+"1","final  value 38053.526747 
+"
+"1","converged
+"

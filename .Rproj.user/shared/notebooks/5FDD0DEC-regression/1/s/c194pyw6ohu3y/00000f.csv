@@ -1,0 +1,8 @@
+"0","#| label: exit poll data prep"
+"0",""
+"0","# Load translation and data prep for raw data"
+"0","library(here)"
+"2","here() starts at C:/Users/Stepan Polikanov/Documents/GitHub/voting-abroad
+"
+"0","source(here(""scripts"", ""raw_data_prep.R""))"
+"2","Warning: package ‘ggrepel’ was built under R version 4.3.3"

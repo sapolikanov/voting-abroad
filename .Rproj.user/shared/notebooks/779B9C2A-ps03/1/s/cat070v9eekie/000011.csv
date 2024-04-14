@@ -1,0 +1,4 @@
+"0",""
+"0","kable(table(ep_raw_clean$volunteer_id[ep_raw_clean$countryname_en == ""Argentina""], "
+"0","            ep_raw_clean$sex[ep_raw_clean$countryname_en == ""Argentina""]), booktabs = T)|> "
+"0","  kable_styling(latex_options = c(""hold_position""))"
