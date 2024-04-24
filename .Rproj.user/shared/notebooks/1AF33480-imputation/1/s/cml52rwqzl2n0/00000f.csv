@@ -1,0 +1,8 @@
+"0","#| label: flux"
+"0",""
+"0","ep_mice_prep |> "
+"0","  select(-countrycode_c, -countrycode_n, -voting_station, -time_to_vs.more_than_4hours,"
+"0","         -time_to_vs.less_than_hour, -result_trust_bin) |> "
+"0","  plot_flux() +"
+"0","    labs(title = ""Influx-outflux plot"") +"
+"0","    theme_minimal()"

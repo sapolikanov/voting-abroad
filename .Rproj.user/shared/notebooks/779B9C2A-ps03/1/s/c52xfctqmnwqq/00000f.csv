@@ -1,4 +1,0 @@
-"0","#| label: data"
-"0",""
-"0","ep_raw <- read_excel(here(""data"", ""exitpoll_rawdata.xlsx""), "
-"0","                     sheet = 4, guess_max = 69262)"

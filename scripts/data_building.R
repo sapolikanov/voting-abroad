@@ -2,12 +2,14 @@
 # Author: Stepan Polikanov
 # Date-time created: 3/18/2024 11:40 Madrid time
 
+# Source data from raw_data_prep script
+source(here::here("scripts", "raw_data_prep.R"))
+
 # Manage packages
 
   ## Package list
-  packages <- c("readxl", "tidyverse", "lubridate", "lme4", "here",
-                "countrycode", "ggrepel", 
-                "rnaturalearth", "rnaturalearthdata", "sf", "classInt")
+  packages <- c("readxl", "tidyverse", "lubridate", "here",
+                "countrycode")
   
   ## Install packages not yet installed
   installed_packages <- packages %in% rownames(installed.packages())
@@ -53,10 +55,11 @@
     
     ### Voting station to country dictionary
     uik_dict <- read_excel(here("data", "uik_dictionary.xlsx"), sheet = 2)
-    countrynameru_dict <- read_excel(here("data", "uik_dictionary.xlsx"), sheet = 3)
+    countrynameru_dict <- read_excel(here("data", "uik_dictionary.xlsx"), 
+                                     sheet = 3)
   
   
-#------------------------------------------------------------------------------#
+#-------------------------------------------------------------------------------
 # Data cleaning: exit poll
 
   ## Data cleaning: new ep
@@ -82,9 +85,6 @@
   
 # Data cleaning: exit poll raw
   
-  ## Load data
-  source(here("scripts", "raw_data_prep.R"))
-  
   ## Aggregate to voting station level
   ep.raw_agg <- ep_raw_clean |> 
     group_by(voting_station, countryname_en, countryname_ru, countrycode_c,
@@ -99,7 +99,8 @@
               share.raw_age4564 = sum(age_bin == "45-64", na.rm = T)/n(),
               share.raw_age65 = sum(age_bin == "65+", na.rm = T)/n(),
               share.raw_tourist = 
-                sum(out_of_Russia_time == "Tourist (lives in Russia)", na.rm = T)/n(),
+                sum(out_of_Russia_time == "Tourist (lives in Russia)", 
+                    na.rm = T)/n(),
               share.raw_afterfeb = 
                 sum(out_of_Russia_time %in% c("6 month - 2 years", 
                                               "< 6 months", 
@@ -123,7 +124,8 @@
                 sum(out_of_Russia_time == "2 - 5 years", na.rm = T)
               /sum(out_of_Russia_time == "> 10 years", na.rm = T),
               share.raw_timemore4h = 
-                sum(time_to_vs == "> 4 hours (staying for the night)", na.rm = T)/n(),
+                sum(time_to_vs == "> 4 hours (staying for the night)", 
+                    na.rm = T)/n(),
               share.raw_local = 
                 sum(time_to_vs %in% c("<30 minutes", "30 minutes - 1 hour"), 
                     na.rm = T)/n(),
@@ -131,12 +133,13 @@
                 sum(result_trust %in% c("Definitely yes", "Probably yes"), 
                     na.rm = T)/n(),
               share.raw_trustanyno = 
-                sum(result_trust %in% c("Definitely no", "Probably no"), na.rm = T)/n())
+                sum(result_trust %in% c("Definitely no", "Probably no"), 
+                    na.rm = T)/n())
   
 # Data cleaning: uik dictionary 
   
-  ## Convert countrynames in Russian provided by the Russian Ministry of Foreign Affairs 
-  ## to match with those int the international code dictionary
+  ## Convert countrynames in Russian provided by the Russian Ministry of Foreign  
+  ## Affairs to match with those int the international code dictionary
   uik_dict_clean <- uik_dict |> 
     mutate(uik = as.character(uik), # For merges
            country_compatible = case_when(
@@ -199,10 +202,12 @@
     mutate(countryname_ru = if_else(is.na(countryname_ru), 
                                     country_compatible, countryname_ru),
            city_en = if_else(is.na(city_en), settlement, city_en),
-           countrycode_c = if_else(tik == "Город Байконур (Республика Казахстан)", 
-                                   "KAZ", countrycode_c),
-           countryname_ru = if_else(tik == "Город Байконур (Республика Казахстан)", 
-                             "Казахстан", countryname_ru),
+           countrycode_c = if_else(
+             tik == "Город Байконур (Республика Казахстан)", 
+             "KAZ", countrycode_c),
+           countryname_ru = if_else(
+             tik == "Город Байконур (Республика Казахстан)", 
+             "Казахстан", countryname_ru),
            city_en = if_else(tik == "Город Байконур (Республика Казахстан)", 
                              "Baikonur", city_en),
            city_ru = if_else(tik == "Город Байконур (Республика Казахстан)", 
@@ -291,10 +296,10 @@
     mutate(diff2015_2010 = (all_2015 - all_2010)/all_2010,
            diff2020_2015 = (all_2020 - all_2010)/all_2015)
   
-#------------------------------------------------------------------------------#
+#-------------------------------------------------------------------------------
 # Merge data
   
-  ## Attach exit poll results, raw exit poll variable aggregates, migration measures
+  ## Compile the final dataset
   merged <- off_res_select |> 
     full_join(ep_cn, by = c("voting_station", "countrycode_c",
                             "countrycode_n", "countryname_ru", 
@@ -303,3 +308,23 @@
                                  "countrycode_n")) |> 
     left_join(out_ru, by = join_by("countrycode_c" == "dest")) |> 
     left_join(intstock_ru, by = "countrycode_n")
+  
+#-------------------------------------------------------------------------------
+# Leave only the resulting dataset for sourcing
+  
+  ## Detach all packages
+  detachAllPackages <- function() {
+    basic.packages <- c("package:stats", "package:graphics", 
+                        "package:grDevices", "package:utils", 
+                        "package:datasets","package:methods","package:base")
+    package.list <- search()[ifelse(unlist(gregexpr("package:", search())) == 1,
+                                    TRUE, FALSE)]
+    package.list <- setdiff(package.list,basic.packages)
+    if (length(package.list)>0)  for (package in package.list) detach(package, character.only=TRUE)
+    
+  }
+  
+  detachAllPackages()
+  
+  ## Remove all objects not equal to ``merged``
+  rm(list = setdiff(ls(), "merged"))

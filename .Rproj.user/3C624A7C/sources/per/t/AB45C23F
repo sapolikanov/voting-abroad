@@ -1,0 +1,27 @@
+{
+    "id": "AB45C23F",
+    "path": "~/GitHub/voting-abroad/scripts/raw_data_prep.R",
+    "project_path": "scripts/raw_data_prep.R",
+    "type": "r_source",
+    "hash": "2326665689",
+    "contents": "",
+    "dirty": false,
+    "created": 1713087005210.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "tempName": "Untitled2",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "10,25",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1713205387,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1713205387618,
+    "read_only": false,
+    "read_only_alternatives": []
+}
