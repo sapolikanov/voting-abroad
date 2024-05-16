@@ -1,7 +1,6 @@
 ---
 title: "Individual-level analysis: data preparation and descriptive statistics"
 subtitle: "Part of the final project for AQMSS II"
-author: "Polikanov Stepan and Okisheva Vera"
 format:
   pdf:
     fig-pos: "H"

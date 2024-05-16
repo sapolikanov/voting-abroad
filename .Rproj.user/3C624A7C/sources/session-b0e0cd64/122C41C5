@@ -3,7 +3,7 @@
     "path": "~/GitHub/voting-abroad/scripts/individual_level/variables_descriptives.qmd",
     "project_path": "scripts/individual_level/variables_descriptives.qmd",
     "type": "quarto_markdown",
-    "hash": "1072211311",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1714818323438.0,
@@ -13,15 +13,15 @@
         "rmdVisualMode": "false",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "457,69",
-        "scrollLine": "433"
+        "cursorPosition": "14,29",
+        "scrollLine": "0"
     },
     "folds": "",
-    "lastKnownWriteTime": 1714820343,
+    "lastKnownWriteTime": 1715890321,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1714820343140,
+    "last_content_update": 1715890321857,
     "read_only": false,
     "read_only_alternatives": []
 }

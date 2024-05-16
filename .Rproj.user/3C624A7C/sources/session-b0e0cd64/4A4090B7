@@ -3,9 +3,9 @@
     "path": "~/GitHub/voting-abroad/scripts/graphs/graphs.qmd",
     "project_path": "scripts/graphs/graphs.qmd",
     "type": "quarto_markdown",
-    "hash": "1590935927",
+    "hash": "698825376",
     "contents": "",
-    "dirty": false,
+    "dirty": true,
     "created": 1715809133704.0,
     "source_on_save": false,
     "relative_order": 7,
@@ -14,15 +14,15 @@
         "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "129,24",
-        "scrollLine": "116"
+        "cursorPosition": "15,29",
+        "scrollLine": "7"
     },
     "folds": "",
     "lastKnownWriteTime": 1715858816,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1715858816514,
+    "last_content_update": 1715890377083,
     "read_only": false,
     "read_only_alternatives": []
 }

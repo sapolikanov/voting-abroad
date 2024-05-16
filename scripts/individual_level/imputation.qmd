@@ -13,8 +13,6 @@ format:
           \addtokomafont{disposition}{\rmfamily} 
           \AddToHook{env/Highlighting/begin}{\scriptsize} 
           \usepackage{float} 
-          \usepackage[backend = biber, style = apa]{biblatex}
-          \addbibresource{project.bib}
 embed-resources: true
 execute: 
   echo: true
@@ -393,4 +391,4 @@ As noted in the graphs at times the number of imputed values is so low that the 
 
 \section{Conclusion}
 
-Based on these results, it appears that we cannot effectively solve the missingness pattern of the data. It clearly indicates that it depends on candidate choice. However since data is decidedly Missing At Random (MAR) this needn't be an issue - except for the Declined to answer category we can still recover unbiased estimates. While we perform multiple imputations of the missing values the systemic character of the pattern precludes the process from making any sort of difference. We therefore proceed with listwise deletion of missing observations for simplicity and utilize the imputations in the robustness section of the paper.
+Based on these results, it appears that we cannot effectively solve the missingness pattern of the data. It clearly indicates that it depends on candidate choice. However since data is decidedly Missing At Random (MAR) this needn't be an issue - except for the Declined to answer category we can still recover unbiased estimates. While we perform multiple imputations of the missing values the systemic character of the pattern precludes the process from making any sort of difference. We therefore proceed with listwise deletion of missing observations for simplicity.

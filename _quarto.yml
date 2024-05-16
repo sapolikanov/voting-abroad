@@ -16,7 +16,6 @@ project:
     - scripts/graphs/graphs.qmd
     - presentation/presentation_quarto.qmd
     - paper/paper.qmd
-    - "!bibliography/"
 
 author:
   - name: Stepan Polikanov

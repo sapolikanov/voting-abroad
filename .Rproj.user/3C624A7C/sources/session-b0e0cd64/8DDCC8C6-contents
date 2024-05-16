@@ -1,9 +1,9 @@
 ---
-title: "Voting abroad: determinants of immigrant voting patterns in 2024 Russian Presidential Elections"
+title: |
+    Voting abroad: determinants of immigrant voting patterns in 2024 Russian Presidential Elections
 subtitle: "Final Paper for AQMSS II"
 format:
   pdf:
-    fig-pos: "H"
     fontsize: 11pt
     highlight-style: kate
     fig-width: 10
@@ -41,11 +41,11 @@ load(here("scripts", "models", "lin.RData"))
 
 \section{Introduction and Research Agenda}
 
-The right to vote in the country’s internal elections while abroad is still not universal: some countries guarantee full exercise of active voting rights for citizens abroad; in some countries these rights are partially limited (by the level of electoral events, length of residence in another country or the need to be registered at the consulate), in other cases, citizens living abroad are completely deprived of their active voting rights \parencite{collyer2013emigration}. Voting abroad remains an under-researched topic for several reasons: firstly, the lack of universal law does not allow cross-country research, and secondly, in most countries voting is secret, which does not allow the study of socio-demographic voting patterns of migrants. Key areas of research on voting abroad include the representation of non-resident citizens, the difference between voting patterns at home and abroad, and the identification of factors influencing the adoption of this practice in different states \parencite{peltoniemi2022voting, lafleur2011states, brand2010authoritarian}.
+The right to vote in the country’s internal elections while abroad is still not universal: some countries guarantee full exercise of active voting rights for citizens abroad; in some countries these rights are partially limited,\footnote{By the level of electoral events, length of residence in another country or the need to be registered at the consulate} in other cases, citizens living abroad are completely deprived of their active voting rights \parencite{collyer2013emigration}. Voting abroad remains an under-researched topic for several reasons: firstly, the lack of universal law does not allow cross-country research, and secondly, in most countries voting is secret, which does not allow the study of socio-demographic voting patterns of migrants. Key areas of research on voting abroad include the representation of non-resident citizens, the difference between voting patterns at home and abroad, and the identification of factors influencing the adoption of this practice in different states \parencite{peltoniemi2022voting, lafleur2011states, brand2010authoritarian}.
 
-Studies of voter behavior often identify two components of the voter utility function: economic and political \parencite{nannestad1994vp}, where economic reflects the material well-being of the voter, associating him with a certain party or candidate, and political reflects ideology, self-identification, religiosity and other components. However, citizens who regularly reside abroad are not under the jurisdiction of their national states, which is why the importance of economic components decreases, and political ones (especially ideological and related to identity) increase \parencite{fidrmuc2005does}. Identity is identified not only as a factor influencing support for a particular party (or candidate), but also on the decision to vote itself: studies emphasize homesickness and sense of belonging as motivators \parencite{boccagni2011reminiscences}, but not the poor integration in the host society \parencite{gherghina2023migrants}. 
+Studies of voter behavior often identify two components of the voter utility function: economic and political \parencite{nannestad1994vp}, where economic reflects the material well-being of the voter, associating him with a certain party or candidate, and political reflects ideology, self-identification, religiosity and other components. However, citizens who regularly reside abroad are not under the jurisdiction of their national states, which is why the importance of economic components decreases, and political ones\footnote{Especially ideological and related to identity} increase \parencite{fidrmuc2005does}. 
 
-Voters abroad are frequently misaligned with voters at home \parencite{ battiston2020vote, vintila2023electoral, szulecki2023emigrant}, which may be due to political re-socialization, the process of the formation or transformation of a migrant's political values, beliefs and voting behavior in connection with the norms and attitudes prevailing in the host country \parencite{finifter1989party}, as well as economic (migration decisions depend on the distribution of earnings in the alternative destinations) \parencite{harris1970migration, borjas1987self, borjas1991immigration} and political selection \parencite{fidrmuc2004voice} both in the migration decision itself and in the countries of residence.  Studies of the peculiarities of voting abroad are more often carried out in relation to citizens of democratic countries, which is primarily due to the fact that autocracies generally extend voting rights to immigrants when they support the incumbent and restrict when they don’t. For this reason, very few studies explicitly link voting abroad to political out-migration or voting in protest \parencite{wellman2021emigrant, umpierrez2021political}.
+Voters abroad are frequently misaligned with voters at home \parencite{ battiston2020vote, vintila2023electoral, szulecki2023emigrant}, which may be due to political re-socialization \parencite{finifter1989party},\footnote{The process of the formation or transformation of a migrant's political values, beliefs and voting behavior in connection with the norms and attitudes prevailing in the host country} as well as economic\footnote{Migration decisions depend on the distribution of earnings in the alternative destinations} \parencite{harris1970migration, borjas1987self, borjas1991immigration} and political selection \parencite{fidrmuc2004voice} both in the migration decision itself and in the countries of residence.  Studies of the peculiarities of voting abroad are more often carried out in relation to citizens of democratic countries, which is primarily due to the fact that autocracies generally extend voting rights to immigrants when they support the incumbent and restrict when they don’t. For this reason, very few studies explicitly link voting abroad to political out-migration or voting in protest \parencite{wellman2021emigrant, umpierrez2021political}.
 
 In 2024, Presidential elections were held in Russia, in which citizens could vote both within the country and abroad in the representative offices of the Russian Federation. According to Russian legislation, citizens living or temporarily staying abroad have the right to vote in federal elections. This practice has been in place for more than 10 years, but in 2024, elections abroad attracted a lot of international attention: 388 791 citizens around the world lined up at the Russian embassy or consulate. Despite the drop in the total number of voters abroad (in 2018, 484 275 people voted abroad), the voting results in many countries are strikingly different from previous years: in 2024, Putin received 72.54\% of the vote in foreign polling stations, while in 2018 – 85\%. Experts attribute this to the massive wave of political emigration that began after Russia’s invasion of Ukraine and continues to this day - according to various estimates, about 1 million people have left the country since February 24, 2022 \parencite{Matusevich_2024}. 
 
@@ -59,8 +59,9 @@ ggplot(data_figure1, aes(fill = putin_bins)) +
                         c("#1984c5", "#63bff0", "#de6e56", "#bf212f"),
                       na.translate = F) +
     labs(fill = "% of votes",
-         caption = "\nSources: Ivan Shukshin's Telegram channel - t.me/nevybory,\nCentral Election Commission of the Russian Federation\n\nNote: Abkhazia and South Osetia not shown"
-         ) +
+         caption = paste0("\nSources: Ivan Shukshin's Telegram channel - t.me/nevybory,",
+                          "\nCentral Election Commission of the Russian Federation\n",
+                          "\nNote: Abkhazia and South Osetia not shown")) +
     theme_void() +
     coord_sf(ylim = c(-55, 90))
 ```
@@ -72,11 +73,11 @@ The research question of the work is "which individual and country-level charact
 
 \textbf{H1:} \textit{There are no substantive differences between demographic structure of those voting for the incumbent abroad and in Russia.}
 
-Past studies of voting patterns in Russia show that, on average, older women, people with low levels of education and people with low levels of economic wealth vote more for Putin \parencite{Goncharenko_2018, Levada_2021, Levada_2022, Levada_2023, greene2019putin, robertson2017putin}. Due to the peculiarities of data collection through exit polls, we do not have access to data on the level of education and economic status; in addition, there are no portraits of voters of other candidates in the literature (since all of them are relatively new faces in Russian politics and are participating in elections for the first time). Thus, we expect that women and older generations of migrants were more likely to vote for Putin. We also expect that people who trust the elections were more likely to vote for Putin, but in this case it is impossible to distinguish the direction of the effect between voting for the incumbent and trust in the electoral system.
+Past studies of voting patterns in Russia show that, on average, older women, people with low levels of education and people with low levels of economic wealth vote more for Putin \parencite{Goncharenko_2018, Levada_2021, Levada_2022, Levada_2023, greene2019putin, robertson2017putin}. Due to the peculiarities of data collection through exit polls, we do not have access to data on the level of education and economic status; in addition, there are no portraits of voters of other candidates in the literature.\footnote{Since all of them are relatively new faces in Russian politics and are participating in elections for the first time} Thus, we expect that women and older generations of migrants were more likely to vote for Putin. We also expect that people who trust the elections were more likely to vote for Putin, but in this case it is impossible to distinguish the direction of the effect between voting for the incumbent and trust in the electoral system.
 
 \textbf{H2:} \textit{Timing of migration as a proxy for average group-level political migration motives has a strong effect on voting choice.}
 
-In the history of Russia, there are many migration waves that have political motivation. Thus, the literature usually distinguishes the “4th wave of immigration” (after the collapse of the USSR and before Putin’s first term) \parencite{Snegov_2022}, a surge in immigration after the annexation of Crimea \parencite{Mereminskaya_2014} and the “fifth wave” - after the invasion of Russian troops into the territory of Ukraine. We expect that recent immigration (under 10 years), as a proxy indicator of disagreement with the policies of the Russian authorities, increases the likelihood of an opposition voting strategy.
+In the history of Russia, there are many migration waves that have political motivation. Thus, the literature usually distinguishes the “4th wave of immigration” \parencite{Snegov_2022}, \footnote{After the collapse of the USSR and before Putin’s first term} a surge in immigration after the annexation of Crimea \parencite{Mereminskaya_2014} and the “fifth wave” - after the invasion of Russian troops into the territory of Ukraine. We expect that recent immigration (under 10 years), as a proxy indicator of disagreement with the policies of the Russian authorities, increases the likelihood of an opposition voting strategy.
     
 \textbf{H3:} \textit{Country characteristics, reflecting the process of political re-socialization and political selection, influence the results of the elections of the President of the Russian Federation, aggregated at the country level.}
 
@@ -86,7 +87,7 @@ In the context of this work, we cannot accurately differentiate the effects of p
 
 \subsection{Sample}
 
-We are working with two samples of data. First is the universe of voting stations and countries where voting abroad was possible, which usually means that a Russian embassy or consulate is operated in the city/country. \footnote{In some cases, an embassy or a consulate covers more than one country. When that happens we treat only the country where the physical voting station is located as being an observation. This is to avoid data duplication and dealing with differential travel times across borders.}  The second is the exit poll sample - consisting of 65 voting stations and 44 countries. \footnote{Although we use 42 countries for analysis due to bad exit poll codings - and less when there are data unavailabilities.}
+We are working with two samples of data. First is the universe of voting stations and countries where voting abroad was possible, which usually means that a Russian embassy or consulate is operated in the city/country. \footnote{In some cases, an embassy or a consulate covers more than one country. When that happens we treat only the country where the physical voting station is located as being an observation. This is to avoid data duplication and dealing with differential travel times across borders.} This amounts to 142 countries.  The second is the exit poll sample - consisting of 65 voting stations and 44 countries. \footnote{Although we use 42 countries for analysis due to bad exit poll codings - and less when there are data unavailabilities.}
 
 The exit poll was not conducted on a random sample of countries where voting abroad was possible. Rather, it being a voluntary initiative, it relied heavily on places where volunteers and organizational support was available. Moreover, as the initiative positions itself as pro-democratic and activist, the selection is also ideological. We assess the imbalance between the exit poll sample and the population of countries where voting abroad happened in \hyperref[tbl-t1]{Table 1}. \footnote{We select from our country-level covariates those that we feel represent country characteristics that might influence a decision to move to a particular country.}
 
@@ -132,7 +133,7 @@ As can be seen from the coefficients, democracy is the most striking difference 
 
 For our dependent variables we use two sources of election outcomes. First comes from the official results of 2024 Presidential Election. We use a dataset parsed by Ivan Shukshin, an election analyst \parencite{central_election_committee_of_russian_federation_results_2024}. \footnote{As far as we can tell, only information for the Istanbul voting station in our sample was lost during parsing. The author confirmed that such errors are possible. We recovered the data manually - the corresponding modification is in the ``data\_building.R`` file.} We also have exit poll voting shares aggregated to the voting station level and raw exit poll questionnaires with socio-demographic characteristics of respondents as provided by the initiative that conducted the exit polls \parencite{vote_abroad_initiative_exit_2024, vote_abroad_initiative_exit_2024-1}. 
 
-Exit poll raw data includes demographic and political questions asked to all respondents. Their descriptive statistics are available in \hy[e. We recode these variables to make more sense conceptually \footnote{Specific coding decisions are described at length in the ``variables\_descriptive.qmd`` file.} - in the "time to voting" station we create two variables: "less than an hour" and "more than 4 hours" to capture the time spent on getting to the voting station without misinterpreting country-specific travel distances. We also create a binary variable for trust in the election results (as opposed to 4-level definitely/probably yes/no coding) to have a more focused measure.
+Exit poll raw data includes demographic and political questions asked to all respondents. Their descriptive statistics are available in \hyperref[tbl-t3a]{Appendix Table 3}. We recode these variables to make more sense conceptually \footnote{Specific coding decisions are described at length in the ``variables\_descriptive.qmd`` file.} - in the "time to voting" station we create two variables: "less than an hour" and "more than 4 hours" to capture the time spent on getting to the voting station without misinterpreting country-specific travel distances. We also create a binary variable for trust in the election results (as opposed to 4-level definitely/probably yes/no coding) to have a more focused measure.
 
 \subsubsection{Country-level covariates}
 
@@ -196,7 +197,7 @@ ggpairs(data_figure2, mapping = aes(color = `Conducted Exit Poll`),
 
 \subsection{Missing Data}
 
-The data on exit polls consists of voluntarily answering respondents, which means that they could opt out of answering any or some questions. The missing data as can be seen from @tbl-at3 amounts to at most to $20\%$ of observations. Two main reasons for those patterns are self-censoring due to the perceived goals and allegiances of the exit poll. We believe that voters in countries close to Russia politically or geographically might fear the monitoring capabilities of the Russian state and conduct themselves as voters inside of Russia do - that is, conceal opposition preferences. On the other hand in (mostly democratic and affluent European countries) places where the voting process was accompanied by opposition demonstrations, incumbent supporters might conceal their preferences. \footnote{We discuss potential missigness mechanisms at length in the ``imputation.qmd`` notebook.} 
+The data on exit polls consists of voluntarily answering respondents, which means that they could opt out of answering any or some questions. The missing data as can be seen from \hyperref[tbl-t3a]{Appendix Table 3} amounts to at most to $20\%$ of observations. Two main reasons for those patterns are self-censoring due to the perceived goals and allegiances of the exit poll. We believe that voters in countries close to Russia politically or geographically might fear the monitoring capabilities of the Russian state and conduct themselves as voters inside of Russia do - that is, conceal opposition preferences. On the other hand in (mostly democratic and affluent European countries) places where the voting process was accompanied by opposition demonstrations, incumbent supporters might conceal their preferences. \footnote{We discuss potential missigness mechanisms at length in the ``imputation.qmd`` notebook.} 
 
 Our verdict regarding the missing data is that it is missing at random (MAR) - that is, missingness is dependent on values of observed covariates. The "Declined to answer" on the vote choice is the largest offender - when this category is removed, the data is missing (almost) completely at random.
 
@@ -215,7 +216,7 @@ ggplot(data_figure3, aes(x = value, y = rowname, fill = rowname)) +
     theme(legend.position = "none")
 ```
 
-We choose not to impute any values for the country-level variables as assigning democracy or GDP values to countries where they are missing could be very problematic and should be done in the presence of sufficient truth data. The missing data matrix is available in \hyperref[fig-f1a]{Figure}.
+We choose not to impute any values for the country-level variables as assigning democracy or GDP values to countries where they are missing could be very problematic and should be done in the presence of sufficient truth data. The missing data matrix is available in \hyperref[fig-f1a]{Appendix Figure 1}.
 
 \section{Empirical strategy}
 
@@ -258,9 +259,11 @@ We use linear models to predict country-level aggregated vote shares. The model 
 \begin{aligned}
     y_{rc} = \alpha_{c} + \beta_{1}(\operatorname{Orthodox}_{c}) + \beta_2(\operatorname{Democracy_{c}}) + \beta_{3}(\operatorname{GDPpc_{c}}) + \beta_{4-7}(\operatorname{Treaties_{c}}) \\
                         + \beta_{8}(\operatorname{Exports_{c}}) + \beta_{19}(\operatorname{Imports_{c}}) + \beta_{10-11}(\operatorname{Friendliness_{c}}) + \beta_{12}(\operatorname{UkraineHelp_{c}})\\
-                        + \beta_{13}(\operatorname{MilitaryPresence_{c}}) + \beta_{14}(\operatorname{Distance_{ic}}) + \epsilon_{c}
+                        + \beta_{13}(\operatorname{MilitaryPresence_{c}}) + \beta_{14}(\operatorname{Distance_{c}}) + \epsilon_{c}
 \end{aligned}
 \end{equation}
+
+where $y_{rc}$ is the vote share for the candidate $r$ in country $c$. $\beta_{1-14}$ are the coefficients of the predictors and $\epsilon_{c}$ is the error term.
 
 \subsection{Mixed effects nested logit}
 
@@ -274,7 +277,7 @@ We then extend the model in \hyperref[e1]{Equation 1} to include country-level p
 \end{aligned}
 \end{equation}
 
-where $\mathbf{I_{ic}}$ is the vector of individual-level covariates from \hyperref[e1]{Equation 1} and $\mathbf{C_{c}}$ is a vector of country-level covariates defined in AGG MODEL LINK. Note that $dme \in D_{me} \in D$. This is because we do not evaluate a dichotomy Haritonov/Slutsky due to it not having enough observations and any substantive interest. Moreover, we report dichotomy Non-systemic/systemic opposition with reduced number of country-level covariates due to it being a singular fir otherwise. 
+where $\mathbf{I_{ic}}$ is the vector of individual-level covariates from \hyperref[e1]{Equation 1} and $\mathbf{C_{c}}$ is a vector of country-level covariates defined in \hyperref[e2]{Equation 2}. Note that $dme \in D_{me} \in D$. This is because we do not evaluate a dichotomy Haritonov/Slutsky due to it not having enough observations and any substantive interest. Moreover, we report dichotomy Non-systemic/systemic opposition with reduced number of country-level covariates due to it being a singular fir otherwise. 
 
 \section{Results}
 
@@ -363,31 +366,28 @@ Based on the results of linear models for vote shares presented in \hyperref[tbl
 ```{r}
 #| results: asis
 
-resizebox.stargazer(m2p, m2d, m2s, label = "t2", header = F, 
-                    title = "Linear models for vote shares",
-                    covariate.labels = c(
-                        "Share of Orthodox cristians", "V-Dem Polyarchy",
+resizebox.stargazer(m2p, m2d, m2s, label = "t2", header = F, title = "Linear models for vote shares",
+                    covariate.labels = c("Share of Orthodox cristians", "V-Dem Polyarchy",
                         "Log GDP per capita", "Treaties signed: 1 (ref 0)",
                         "Treaties signed: 2 (ref 0)", "Treaties signed: 3 (ref 0)",
                         "Treaties signed: 4 (ref 0)", "Share of export to country", 
                         "Share of import from country", "Friendliness status: Unfriendly",
                         "Friendliness status: Friendly",
                         "Ukraine help", "Russian military base or PMC in country",
-                        "Log geodesic distance", "Log departures to country", 
-                        "Intercept"),
+                        "Log geodesic distance", "Log departures to country", "Intercept"),
                     tab.height = "\\textheight", tab.width= "\\textwidth")
 ```
 
 \begin{itemize}
     \item In fact, in countries culturally close to Russia in terms of religion, immigrants are more likely to vote for Putin and less likely to choose one of the opposition voting strategies.
-    \item The results confirm the words of the head of the Russian Central Election Commission: in unfriendly countries, voters more often chose to spoil the ballot rather than vote for Davankov.
 \end{itemize}
 
 :::
 
 :::{#secondcol}
 \begin{itemize}
-   \item The political and economic context of countries has a greater influence on the voting results: in richer countries, voters are more likely to choose one of the opposition strategies rather than vote for Putin. The same effect is observed for more democratic countries. This result is simultaneously an indicator of political re-socialization and political selection; in this case, we cannot differentiate between them.
+     \item The political and economic context of countries has a greater influence on the voting results: in richer countries, voters are more likely to choose one of the opposition strategies rather than vote for Putin. The same effect is observed for more democratic countries. This result is simultaneously an indicator of political re-socialization and political selection; in this case, we cannot differentiate between them.
+    \item The results confirm the words of the head of the Russian Central Election Commission: in unfriendly countries, voters more often chose to spoil the ballot rather than vote for Davankov.
     \item An interesting effect is observed for countries that import from Russia - voters living there are less likely to vote for Putin. This effect reflects the continued dependence of European and Western countries on Russian oil and gas supplies, despite sanctions.
     \item Russian military bases and aid to Ukraine do not have an effect on election results, which may be due to the fact that these variables are associated with the level of economic development and the level of democracy.
      \item Mean departures to the country from Russia is insignificant, meaning that immigrants going to more or less common foreign countries have no differential voting attitudes. This may also be to the fact that more common countries to go to from Russia are more economically prosperous and democratic, or could have something to do with the measure itself.
@@ -396,11 +396,13 @@ resizebox.stargazer(m2p, m2d, m2s, label = "t2", header = F,
 
 ::::
 
+\newpage
+
 Thus, the third hypothesis is confirmed: country characteristics, reflecting the process of political re-socialization and political selection, influence the results of the elections of the President of the Russian Federation, aggregated at the country level.
 
 \subsection{Mixed effects models}
 
-We now add country-level predictors to our individual-level models. Overall, their inclusion doesn't invalidate any of the conclusions drawn before. Below I illustrate selected results. The full regression table is available in the \hyperref[tbl-t5a]{Appendix Table 5}.
+We now add country-level predictors to our individual-level models. Overall, their inclusion doesn't invalidate any of the conclusions drawn before. Below I illustrate selected results. The full regression table is available in the \hyperref[t5a]{Appendix Table 5}.
 
 ```{r}
 #| fig-cap: Probabilities to answer the exit poll by export-import and trust in result
@@ -510,6 +512,11 @@ The only country-level variable that produces a significant effect is the democr
 
 \section{Conclusion}
 
+The 2024 Russian Presidential elections abroad are a good case for studying political migration and opposition voting of non-residents. We can observe how the Russian diaspora is changing, due to the large wave of political migration after the outbreak of the armed conflict between Russia and Ukraine. The image of the average voter who votes for Putin also persists among non-residents: abroad, as in Russia, Putin is mostly supported by older people, women and those who migrated for non-political reasons.
+
+The timing of immigration reflects political views: people who left after the annexation of Crimea and the start of the war are more likely to choose an opposition voting strategy. Probably, the reasons for their migration are directly political and related to disagreement with the policies of the dictator. In addition, processes of political re-socialization and political selection are observed for the Russian diaspora: in free, democratic and rich countries that do not depend on Russia, Russian citizens are less likely to vote for Putin’s 5th term; however, at the moment it is impossible to differentiate between the effect of the new environment and the deliberate choice of freer countries when emigrating.
+
+\newpage
 \printbibliography
 
 \newpage
@@ -517,30 +524,32 @@ The only country-level variable that produces a significant effect is the democr
 
 \subsection{Descriptive statistics}
 
+\newpage
 ```{r}
 #| tbl-cap: Descriptive statistics of categorical country-level variables
 #| label: tbl-t1a
-datasummary_skim(data_table2, title = "Descriptive statistics of categorical country-level variables",
+datasummary_skim(data_table2,
                  output = "kableExtra", type = "categorical") |> 
-  kable_styling(latex_options = c("scale_down", "hold_position"))
+  kable_styling(latex_options = c("scale_down"))
 ```
 
 ```{r}
 #| tbl-cap: Descriptive statistics of numeric country-level variables
 #| label: tbl-t2a
-datasummary_skim(data_table2, title = "Descriptive statistics of numeric country-level variables",
+datasummary_skim(data_table2,
                  output = "kableExtra", type = "numeric") |>
-  kable_styling(latex_options = c("scale_down", "hold_position"))
+  kable_styling(latex_options = c("scale_down"))
 ```
 
-\newpage
 ```{r}
 #| tbl-cap: Descriptive statistics of individual-level variables
 #| label: tbl-t3a
-datasummary_skim(data_table1, title = "Descriptive statistics of individual-level variables",
+datasummary_skim(data_table1, 
                  output = "kableExtra", type = "categorical") |> 
-  kable_styling(latex_options = c("scale_down", "hold_position"))
+  kable_styling(latex_options = c("scale_down"))
 ```
+
+\newpage
 
 \subsection{Missing data}
 
