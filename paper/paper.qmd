@@ -519,12 +519,13 @@ The timing of immigration reflects political views: people who left after the an
 \newpage
 \printbibliography
 
-\newpage
+\clearpage
 \section{Appendix}
 
 \subsection{Descriptive statistics}
 
-\newpage
+\vspace{0.5em}
+
 ```{r}
 #| tbl-cap: Descriptive statistics of categorical country-level variables
 #| label: tbl-t1a

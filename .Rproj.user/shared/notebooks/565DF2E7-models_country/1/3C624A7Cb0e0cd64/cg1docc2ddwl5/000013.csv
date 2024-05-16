@@ -1,4 +1,0 @@
-"0","check_m2d[[5]] <- check_m2d[[5]] + theme(axis.text.x = element_text(angle = 45,"
-"0","                                                                    hjust = 1))"
-"0","                                                                    "
-"0","check_m2s <- plot(check_model(m2s))"

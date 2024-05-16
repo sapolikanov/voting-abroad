@@ -13,6 +13,8 @@ format:
           \addtokomafont{disposition}{\rmfamily} 
           \AddToHook{env/Highlighting/begin}{\scriptsize} 
           \usepackage{float} 
+          \usepackage[backend = biber, style = apa]{biblatex}
+          \addbibresource{project.bib}
 embed-resources: true
 execute: 
   echo: true

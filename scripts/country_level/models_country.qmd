@@ -74,7 +74,7 @@ save(m1.log, file = here("scripts", "models", "m1_log.rds"))
 
 ## Vote shares
 
-As the dependent variables here are vote shares (percent, 0-100 for use of interpretation), we use a linear regression model. We start with the simplest model using our preferred variables. 
+As the dependent variables here are vote shares (percent, 0-100 for use of interpretation), we use a linear regression model. Here is the simplest model using our preferred variables. 
 
 ```{r}
 #| label: linear models 2
@@ -94,7 +94,7 @@ m2s <- lm(spoiled_full ~ orthodox_share + vdem_polyarchy_2022
           + friendly_status + help + military_dummy + log(dist) + log(mean_trips), 
           data = data_country)
 
-save(list = c(m2p, m2d, m2s), file = here("scripts", "models", "lin.RData"))
+save(list = c("m2p", "m2d", "m2s"), file = here("scripts", "models", "lin.RData"))
 ```
 
 ```{r}

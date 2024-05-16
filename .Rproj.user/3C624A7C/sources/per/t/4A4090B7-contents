@@ -1,0 +1,234 @@
+---
+title: "Graphs document"
+subtitle: "Final Paper for AQMSS II"
+author: "Polikanov Stepan and Okisheva Vera"
+format:
+  pdf:
+    fig-pos: "H"
+    fontsize: 11pt
+    highlight-style: kate
+    fig-width: 10
+    fig-height: 6
+    include-in-header:
+      - text: |
+          \addtokomafont{disposition}{\rmfamily} 
+          \AddToHook{env/Highlighting/begin}{\scriptsize} 
+          \usepackage{float} 
+embed-resources: true
+execute: 
+  echo: true
+  warning: false
+  error: false
+  message: false
+---
+
+```{r}
+#| label: packages
+
+source(here::here("utilities", "check_packages.R"))
+source(here::here("utilities", "functions.R"))
+```
+
+
+```{r}
+#| label: source data
+
+data_country <- read_rds(here("data", "data_built", "data_country.rds"))
+data_built <- read_rds(here("data", "data_built", "data_built_.rds"))
+ep_raw <- read_rds(here("data", "data_built", "ep_raw_dep.rds"))
+world <- ne_countries(scale = "medium", returnclass = "sf") |> 
+  mutate(countrycode_c = countrycode(as.numeric(iso_n3_eh), origin = "iso3n",
+                                     destination = "iso3c"))
+load(here("data", "data_raw", "imp1.RData"))
+load(here("scripts", "models", "m1_log.rds"))
+```
+
+```{r}
+#| label: figure I - map of election results
+
+data_figure1 <- data_country |>
+  full_join(world, by = "countrycode_c") |>
+  st_as_sf() |> 
+  mutate(putin_bins = cut(putin_full, c(0, 25, 50, 75, 100)))
+  
+```
+
+```{r}
+#| label: table 1 
+
+data_table1 <- ep_raw |> 
+  select(`Vote Choice` = vote, 
+         `Gender` = sex, 
+         `Age bin` = age_bin, 
+         `Time living out of Russia` = out_of_Russia_time, 
+         `Time took to get to the voting station` = time_to_vs,
+         `Time took to get to the voting station: less than hour` =
+           time_to_vs.less_than_hour, 
+         `Time took to get to the voting station: more than 4 hours`  =
+           time_to_vs.more_than_4hours, 
+         `Trust in the election result` = result_trust, 
+         `Binary trust in the election result` = result_trust_bin) |> 
+  mutate(across(everything(), ~ if_else(is.na(.), "No Data", .)))
+```
+
+```{r}
+#| label: tables 3 and 4 - descriptive statistics for country-level
+
+data_table2 <- data_country |> 
+  ungroup() |> 
+  transmute(`Share of Orthodox Christians, 2011` = orthodox_share, 
+         `VDem Polyarchy, 2022` = vdem_polyarchy_2022,
+         `BMR Democracy, 2020` = factor(bmr_dem_2020,
+                                        levels = 0:1,
+                                        labels = c("Not a democracy", 
+                                                   "Democracy"), exclude = NULL),
+         `Maddison project GDPpc, 2018` = mad_gdppc_2018,
+         `WDI GDPpc, 2020` = wdi_gdpcapcon2015_2022,
+         `Level of military obligations, 2018` = 
+           factor(obl_type, levels = 0:4, 
+                  labels = c("None",
+                             "One type of treaty signed",
+                             "Two types of treaties signed",
+                             "Three types of treaties signed",
+                             "All types of treaties (Nonaggression, Consultations, Neutrality, Defense obligations) signed"), exclude = NULL),
+         `Share of exports to country, 2022` = export_share,
+         `Share of imports from country, 2022` = import_share,
+         `"Friendliness" status` = factor(friendly_status, 
+                                          labels = c("Neutral", "Unfriendly",
+                                                     "Friendly", "No Data"),
+                                          exclude = NULL),
+         `Help to Ukraine` = factor(help, levels = 0:1,
+                                   labels = c("No", "Yes"), exclude = NULL),
+         `Russian military or PMC presence in country` = 
+           factor(military_dummy, levels = 0:1,
+                  labels = c("No", "Yes"), exclude = NULL),
+         `Weighted geodesic distance to Russia` = dist,
+         `Mean departures to country, 2010-2022` = mean_trips)
+```
+
+```{r}
+data_table4 <- data_built |> 
+  transmute(`Share of Orthodox Christians, 2011` = orthodox_share, 
+         `VDem Polyarchy, 2022` = vdem_polyarchy_2022,
+         `Maddison project GDPpc, 2018` = mad_gdppc_2018,
+         `WDI GDPpc, 2020` = wdi_gdpcapcon2015_2022,
+         `Share of exports to country, 2022` = export_share,
+         `Share of imports from country, 2022` = import_share,
+         `Weighted geodesic distance to Russia` = dist,
+         `Mean departures to country, 2010-2022` = mean_trips,
+         ep = factor(if_else(is.na(ep), 0, ep), levels = 0:1, labels = c("No", "Yes")))
+
+datasummary_balance(~ ep, output = "kableExtra",
+                    data = data_table4, stars = T,
+                    dinm_statistic = "p.value") |> 
+  kable_styling(latex_options = c("scale_down", "hold_position"))
+```
+
+```{r}
+#| label: figure II - balance
+modelplot(m1.log, coef_map = c("vdem_polyarchy_2022" = "V-Dem Polyarchy",
+                               "log(mad_gdppc_2018)" = "Log GDPpc",
+                               "orthodox_share" = "% of Orthodox",
+                               "log(dist)" = "Log geodesic distance",
+                               "log(voters_in_list)" = "Log registered voters",
+                               "log(mean_trips)" = "Log departures to country"), 
+          color = "#bf212f")
+```
+
+```{r}
+#| label: figure III - ggpairs
+
+data_figure2 <- data_country |> 
+  ungroup() |> 
+  transmute(`% Orthodox` = orthodox_share, 
+            `Polyarchy` = vdem_polyarchy_2022,
+            `Log GDPpc` = log(mad_gdppc_2018),
+            `Share exports` = export_share,
+            `Share imports` = import_share,
+            `Friendly status` = factor(friendly_status),
+            `Help to Ukraine` = factor(help, levels = 0:1,
+                                   labels = c("No", "Yes")),
+            `Military` = 
+              factor(military_dummy, levels = 0:1,
+                     labels = c("No", "Yes")),
+            `Log distance` = log(dist),
+            `Log mean trips` = log(mean_trips),
+            `Conducted Exit Poll` = factor(ep, levels = 0:1, labels = c("No", "Yes"))) |> 
+  drop_na()
+```
+
+```{r}
+#| label: figure IIIA - missing data results
+
+imp1_cmp <- complete(imp1, "long", include = T) |> 
+  mutate(imputed = factor(if_else(`.imp` > 0, 1, 0), 
+                          labels = c("Observed", "Average Imputed")),
+         imp = factor(if_else(`.imp` == 0, "Observed", as.character(`.imp`)))) |> 
+  filter(!countryname_en %in% c("Australia", "New Zealand"))
+
+data_figure3 <- imp1_cmp |> 
+  group_by(imp) |> 
+  summarize(across(c(sex, age_bin, out_of_Russia_time, 
+                     time_to_vs.less_than_hour, time_to_vs.more_than_4hours, 
+                     result_trust_bin), ~ sum(is.na(.)))) |> 
+  select(-imp) |> 
+  distinct() |> 
+  rownames_to_column() |> 
+  pivot_longer(cols = c(-rowname)) |> 
+  mutate(name = factor(name, 
+                        levels = c("sex", "age_bin", "out_of_Russia_time", 
+                                   "time_to_vs.less_than_hour",
+                                   "time_to_vs.more_than_4hours", 
+                                   "result_trust_bin"),
+                        labels = c("Gender", "Age", "Time out of Russia",
+                                   "Time to voting station < 1 hour",
+                                   "Time to voting station > 4 hours",
+                                   "Trust in the result")),
+         rowname = factor(rowname, levels = c(1, 2), labels = c("Imputed",
+                                                                "Observed")))
+```
+
+```{r}
+#| fig-width: 10
+#| fig-height: 8
+
+data_figure4 <- data_country |> 
+  ungroup() |> 
+  mutate(bmr_dem_2020 = factor(bmr_dem_2020,
+                                        levels = 0:1,
+                                        labels = c("No", 
+                                                   "Yes"), exclude = NULL),
+         obl_type = factor(obl_type, levels = 0:4, 
+                  labels = c("None",
+                             "One",
+                             "Two",
+                             "Three",
+                             "All"), exclude = NULL),
+         friendly_status = factor(friendly_status),
+         help = factor(help, levels = 0:1,
+                                   labels = c("No", "Yes"), exclude = NULL),
+         military_dummy = 
+           factor(military_dummy, levels = 0:1,
+                  labels = c("No", "Yes"), exclude = NULL))
+  
+  labelled::var_label(data_figure4) <- list(
+    bmr_dem_2020 = "BMR",
+    obl_type = "Oblig",
+    friendly_status = "Status",
+    help = "Help",
+    military_dummy = "Mil",
+    orthodox_share = "Orth",
+    vdem_polyarchy_2022 = "VDem",
+    mad_gdppc_2018 = "Mad",
+    wdi_gdpcapcon2015_2022 = "WDI",
+    export_share = "Exp",
+    import_share = "Imp",
+    dist = "Dist",
+    mean_trips = "Trips")
+```
+
+
+```{r}
+save.image(file = here("paper", "graphs_figures.RData"))
+```
+

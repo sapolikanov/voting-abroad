@@ -1,0 +1,724 @@
+---
+title: "Individual-level analysis: models"
+subtitle: "Part of the final project for AQMSS II"
+author: "Polikanov Stepan and Okisheva Vera"
+format:
+  pdf:
+    fig-pos: "H"
+    fontsize: 11pt
+    highlight-style: kate
+    fig-width: 10
+    fig-height: 6
+    include-in-header:
+      - text: |
+          \addtokomafont{disposition}{\rmfamily} 
+          \AddToHook{env/Highlighting/begin}{\scriptsize} 
+          \usepackage{float} 
+          \usepackage[backend = biber, style = apa]{biblatex}
+embed-resources: true
+execute: 
+  echo: true
+  warning: false
+  error: false
+  message: false
+---
+
+```{r}
+#| label: packages
+#| cache: false
+
+source(here::here("utilities", "check_packages.R"))
+source(here::here("utilities", "functions.R"))
+```
+
+```{r}
+#| label: load models
+
+load(here("scripts", "models", "feme_bobyqa.RData"))
+load(here("scripts", "models", "nlme_bobyqa.RData"))
+load(here("scripts", "models", "me_allfit.RData"))
+```
+
+```{r}
+#| label: source data
+
+ep_raw_dep <- read_rds(here("data", "data_built", "ep_raw_dep.rds"))
+data_country <- read_rds(here("data", "data_built", "data_country.rds"))
+```
+
+```{r}
+#| label: preparing data for naive regressions
+
+# Recode no data back to native NA
+model_data <- ep_raw_dep |> 
+  mutate(across(c(sex, age_bin, time_to_vs.less_than_hour, 
+                  time_to_vs.less_than_hour, out_of_Russia_time, 
+                  result_trust_bin), 
+                ~ if_else(. %in% c("No Data", "Declined to answer"), NA, .)),
+         vote = relevel(as.factor(vote), ref = "Putin"),
+         sex = relevel(as.factor(sex), ref = "Male"),
+         age_bin = relevel(as.factor(age_bin), ref = "25-44"),
+         out_of_Russia_time = relevel(as.factor(out_of_Russia_time), ref = "Before annexation"),
+         result_trust_bin = relevel(as.factor(result_trust_bin), ref = "Yes")) |> 
+  filter(!countryname_en %in% c("New Zealand", "Australia"))
+```
+
+```{r}
+#| label: binary outcomes
+#| results: asis
+
+m1a.naive <- glm(vote_putin ~ sex + age_bin + time_to_vs.less_than_hour
+                 + out_of_Russia_time + result_trust_bin, 
+                 data = model_data, family = "binomial")
+
+m1b.naive <- lm(vote_declined ~ sex + age_bin + time_to_vs.less_than_hour
+               + out_of_Russia_time + result_trust_bin, 
+               data = model_data)
+
+m1c.naive <- lm(vote_putin_declined ~ sex + age_bin + time_to_vs.less_than_hour
+               + out_of_Russia_time + result_trust_bin, 
+               data = model_data)
+
+m1d.naive <- lm(vote_davankov ~ sex + age_bin + time_to_vs.less_than_hour
+               + out_of_Russia_time + result_trust_bin, 
+               data = model_data)
+
+m1e.naive <- lm(vote_spoiled ~ sex + age_bin + time_to_vs.less_than_hour
+               + out_of_Russia_time + result_trust_bin, 
+               data = model_data)
+
+m1f.naive <- lm(vote_opposition ~ sex + age_bin + time_to_vs.less_than_hour
+               + out_of_Russia_time + result_trust_bin, 
+               data = model_data)
+
+resizebox.stargazer(m1a.naive, m1b.naive, m1c.naive, m1d.naive, m1e.naive, m1f.naive,  
+          title = "Binary outcomes, naive approach", header = F, 
+          dep.var.labels = c("Vote Putin", "Decline to Answer", 
+                             "Putin or Declined","Vote Davankov", "Spoil the ballot", 
+                             "Vote Davankov or spoil"),
+          covariate.labels = c(
+            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
+            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
+            "Took < 1 hour to get to the voting station",
+            "Moved after March 2022 (ref before 2014)", 
+            "Moved after March 2019 but before March 2022 (ref before 2014)",
+            "Moved after March 2014 but before March 2019 (ref before 2014)",
+            "Didn't move - tourist, lives in Russia (ref before 2014)",
+            "Trust in the result: Don't know (ref Yes)",
+            "Trust in the result: No (ref Yes)", "Intercept"),
+          tab.height = "\\textheight", tab.width= "\\textwidth"
+          )
+```
+
+# Multinomial
+
+```{r}
+#| label: multinomial naive estimation
+#| results: hide
+
+m2.naive <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour
+                      + out_of_Russia_time + result_trust_bin, 
+                      data = model_data)
+
+m2.fe <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour
+                  + out_of_Russia_time + result_trust_bin + as.factor(voting_station), 
+                      data = model_data)
+```
+
+```{r}
+#| label: multinomial naive table
+#| results: asis
+#| cache: true
+
+resizebox.stargazer(m2.naive,
+          title = "Multinomial regression, naive approach", header = F,
+          covariate.labels = c(
+            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
+            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
+            "Took < 1 hour to get to the voting station",
+            "Moved after March 2022 (ref before 2014)", 
+            "Moved after March 2019 but before March 2022 (ref before 2014)",
+            "Moved after March 2014 but before March 2019 (ref before 2014)",
+            "Didn't move - tourist, lives in Russia (ref before 2014)",
+            "Trust in the result: Don't know (ref Yes)",
+            "Trust in the result: No (ref Yes)", "Intercept"),
+          add.lines = list(c("Fixed effects", rep("No", 6))),
+          tab.height = "\\textheight", tab.width= "\\textwidth"
+          )
+```
+
+```{r}
+#| label: multinomial fe table 
+#| results: asis
+#| cache: true
+
+resizebox.stargazer(m2.fe,
+          title = "Multinomial regression, fixed effects", 
+          omit = "factor",header = F,
+          covariate.labels = c(
+            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
+            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
+            "Took < 1 hour to get to the voting station",
+            "Moved after March 2022 (ref before 2014)", 
+            "Moved after March 2019 but before March 2022 (ref before 2014)",
+            "Moved after March 2014 but before March 2019 (ref before 2014)",
+            "Didn't move - tourist, lives in Russia (ref before 2014)",
+            "Trust in the result: Don't know (ref Yes)",
+            "Trust in the result: No (ref Yes)", "Intercept"),
+          add.lines = list(c("Fixed effects", rep("No", 6))),
+          tab.height = "\\textheight", tab.width= "\\textwidth"
+          )
+```
+
+
+```{r}
+#| label: nested logit naive
+
+comparisons <- logits(answer = dichotomy(answer = c("Davankov",
+                                                    "Spoiled ballot",
+                                                    "Slutsky",
+                                                    "Haritonov",
+                                                    "Putin"),
+                                         "Declined to answer"),
+                      not_putin = dichotomy(opposition = c("Davankov",
+                                                           "Spoiled ballot",
+                                                           "Slutsky",
+                                                           "Haritonov"),
+                                            "Putin"),
+                      opposition = dichotomy(
+                        systemic = c("Slutsky", "Haritonov"),
+                        nonsystemic = c("Davankov", "Spoiled ballot")),
+                      nonsystemic = c("Spoiled ballot", "Davankov"),
+                      systemic = c("Haritonov", "Slutsky"))
+
+m3.nested <- nestedLogit(vote ~ sex + age_bin + time_to_vs.less_than_hour
+                          + out_of_Russia_time + result_trust_bin, 
+                          dichotomies = comparisons,
+                          data = model_data, 
+                          subset = model_data$vote != "Tore up/took"
+                         | !is.na(model_data$vote))
+
+m3.nested.fe <- nestedLogit(vote ~ sex + age_bin + time_to_vs.less_than_hour
+                          + out_of_Russia_time + result_trust_bin + as.factor(voting_station), 
+                          dichotomies = comparisons,
+                          data = model_data, 
+                          subset = model_data$vote != "Tore up/took"
+                         | !is.na(model_data$vote))
+
+save(list = c("m3.nested", "m3.nested.fe"), 
+     file = here("scripts", "models", "nl_fe.RData"))
+```
+
+```{r}
+#| label: nested logit tables
+#| results: asis
+#| cache: true
+
+resizebox.stargazer(models(m3.nested), 
+          title = "Nested Logit models", header = F,
+          dep.var.labels = c("Don't answer vs answer", "Putin vs everyone", 
+                             "Non-systemic vs systemic opposition",
+                             "Spoiled vs Davankov", "Slutsky vs Haritonov"),
+          covariate.labels = c(
+            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
+            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
+            "Took < 1 hour to get to the voting station",
+            "Moved after March 2022 (ref before 2014)", 
+            "Moved after March 2019 but before March 2022 (ref before 2014)",
+            "Moved after March 2014 but before March 2019 (ref before 2014)",
+            "Didn't move - tourist, lives in Russia (ref before 2014)",
+            "Trust in the result: Don't know (ref Yes)",
+            "Trust in the result: No (ref Yes)", "Intercept"),
+          tab.height = "\\textheight", tab.width= "\\textwidth"
+          )
+
+resizebox.stargazer(models(m3.nested.fe), 
+          title = "Nested Logit models, fixed effects", header = F,
+          dep.var.labels = c("Don't answer vs answer", "Putin vs everyone", 
+                             "Non-systemic vs systemic opposition",
+                             "Spoiled vs Davankov", "Slutsky vs Haritonov"),
+          covariate.labels = c(
+            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
+            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
+            "Took < 1 hour to get to the voting station",
+            "Moved after March 2022 (ref before 2014)", 
+            "Moved after March 2019 but before March 2022 (ref before 2014)",
+            "Moved after March 2014 but before March 2019 (ref before 2014)",
+            "Didn't move - tourist, lives in Russia (ref before 2014)",
+            "Trust in the result: Don't know (ref Yes)",
+            "Trust in the result: No (ref Yes)", "Intercept"),
+          omit = "as.factor", 
+          tab.height = "\\textheight", tab.width= "\\textwidth"
+          )
+```
+
+# Mixed effects models
+
+## Nested Logit
+
+```{r}
+#| label: prepare data for mixed logit
+
+# Drop Australia and New Zealand for this because they have very skewed and low 
+# n observations. Might also help with convergence
+nested_me_data <- model_data |>
+  filter(vote != "Tore up/took", !countryname_en %in% c("Australia",
+                                                        "New Zealand")) |>
+  mutate(non_answer = if_else(vote == "Declined to answer", 1, 0),
+         putin_else = case_when(vote == "Putin" ~ 1,
+                                vote %in% c("Davankov", "Spoiled ballot",
+                                            "Slutsky", "Haritonov") ~ 0,
+                                .default = NA),
+         nonsys_sys = case_when(vote %in% c("Davankov", "Spoiled ballot") ~ 1,
+                                vote %in% c("Slutsky", "Haritonov") ~ 0,
+                                .default = NA),
+         davankov_spoiled = case_when(vote == "Davankov" ~ 1,
+                                      vote == "Spoiled ballot" ~ 0,
+                                      .default = NA),
+         slutsky_haritonov = case_when(vote == "Slutsky" ~ 1,
+                                       vote == "Haritonov" ~ 0,
+                                       .default = NA)) |> 
+  left_join(data_country, by = c("countrycode_n", "countrycode_c"))
+```
+
+We fit the model consecutively for each dichotomy this time separating data by hand in the same way as the ``nestedLogit`` package does.
+
+For some models we get non-convergence. We diagnose which optimizers work fine in those case and update the model to achieve convergence.
+
+```{r}
+#| label: mixed effects models - answer
+#| eval: false
+
+# Answer (1) vs non-answer (0)
+m4a.nested <- glmer(non_answer ~ sex + age_bin + time_to_vs.less_than_hour
+                    + out_of_Russia_time + result_trust_bin
+                    + (1 | countryname_en.x), 
+                    data = nested_me_data, family = binomial,
+                    control = glmerControl(optimizer = "bobyqa"))
+
+# Fit using all optimizers
+# m4.allfit <- allFit(m4a.nested)
+
+# bobyqa works so use that in the previous call (no reason to estimate it again 
+# for knitr destruction reasons)
+summary(m4a.nested)
+```
+
+### Not answer v answer
+
+```{r}
+#| label: mixed effect models - answer level 2
+#| eval: false
+
+# Add second-level predicotrs
+m5a.nested <- glmer(non_answer ~ sex + age_bin + time_to_vs.less_than_hour
+                    + out_of_Russia_time + result_trust_bin
+                    + orthodox_share + vdem_polyarchy_2022 
+                    + log(mad_gdppc_2018) + obl_type + export_share
+                    + import_share + friendly_status + help + military_dummy
+                    + log(dist) + (1 | countryname_en.x), 
+                    data = nested_me_data, family = binomial,
+                    control = glmerControl(optimizer = "bobyqa",
+                                           optCtrl = list(maxfun = 1e9)))
+  # Doesn't converge
+```
+
+```{r}
+#| label: mixed effects models - answer level 2 diagnostics
+#| cache: true
+
+derivs1 <- m5a.nested@optinfo$derivs
+sc_grad1 <- with(derivs1,solve(Hessian,gradient))
+max(abs(sc_grad1))
+
+max(pmin(abs(sc_grad1),abs(derivs1$gradient)))
+
+dd <- update(m5a.nested,devFunOnly=TRUE)
+pars <- unlist(getME(m5a.nested,c("theta","fixef")))
+grad2 <- grad(dd,pars)
+hess2 <- hessian(dd,pars)
+sc_grad2 <- solve(hess2,grad2)
+max(pmin(abs(sc_grad2),abs(grad2)))
+
+# Fit with all optimizers
+# m5a.allfit <- allFit(m5a.nested, maxfun = 1e9)
+
+# No options seem to work
+m5a.allfit_OK <- m5a.allfit[sapply(m5a.allfit, is, "merMod")]
+lapply(m5a.allfit_OK, function(x) x@optinfo$conv$lme4$messages)
+
+# The gradient cutoffs for Nelder Mead (nlopt), bobyqa and nlminwrap seem to 
+# be close to what I am getting. 
+
+# Check for singular fit 
+tt <- getME(m5a.nested,"theta")
+ll <- getME(m5a.nested,"lower")
+min(tt[ll==0]) # Nope, no singular fit
+
+# The only other thing to try is to see whether the coefficients change in unconverged models
+is.OK <- sapply(m5a.allfit, is, "merMod")
+m5a.allfit.OK <- m5a.allfit[is.OK]
+lapply(m5a.allfit.OK,function(x) x@optinfo$conv$lme4$messages)
+
+(lliks <- sort(sapply(m5a.allfit.OK,logLik)))
+m5a.allfit.fixef <- t(sapply(m5a.allfit.OK,fixef))
+m5a.allfit.fixef.m <- melt(m5a.allfit.fixef)
+models <- levels(m5a.allfit.fixef.m$Var1)
+m5a.allfit.fixef.m <- transform(m5a.allfit.fixef.m, Var1 = factor(Var1, levels = names(lliks)))
+
+ggplot(m5a.allfit.fixef.m[1:98, ], 
+       aes(x = value, y = Var1, colour = Var1)) +
+  geom_point() +
+  facet_wrap(~ Var2, scale = "free") +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_discrete(breaks = models,
+                   labels = substr(models, 1, 3)) +
+  labs(x = "", y = "") + 
+  theme_minimal() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(m5a.allfit.fixef.m[99:189, ], 
+       aes(x = value, y = Var1, colour = Var1)) +
+  geom_point() +
+  facet_wrap(~ Var2, scale = "free") +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_discrete(breaks = models,
+                   labels = substr(models, 1, 3)) +
+  labs(x = "", y = "") + 
+  theme_minimal() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+# So judging by this I leave the model alone - the coefficients seem to be okay 
+# between different optimizers and since bobyqa comes close to the tolerance 
+# threshold, I will use it.
+```
+
+### Putin v everyone else
+
+```{r}
+#| label: mixed effects models - putin
+#| eval: false
+
+# Putin (1) vs everyone else (0), declined to answer NA
+m4p.nested <- glmer(putin_else ~ sex + age_bin + time_to_vs.less_than_hour
+                    + out_of_Russia_time + result_trust_bin
+                    + (1 | countryname_en.x), 
+                    data = nested_me_data, family = binomial,
+                    control = glmerControl(optimizer = "bobyqa"))
+
+# Converges!
+summary(m4p.nested)
+```
+
+```{r}
+#| label: mixed effects models - putin level 2
+#| eval: false
+
+m5p.nested <- glmer(putin_else ~ sex + age_bin + time_to_vs.less_than_hour
+                    + out_of_Russia_time + result_trust_bin
+                    + orthodox_share + vdem_polyarchy_2022 
+                    + log(mad_gdppc_2018) + obl_type + export_share
+                    + import_share + friendly_status + help + military_dummy
+                    + log(dist) + (1 | countryname_en.x), 
+                    data = nested_me_data, family = binomial,
+                    control = glmerControl(optimizer = "bobyqa", 
+                                           optCtrl = list(maxfun = 1e9)))
+```
+
+```{r}
+#| label: mixed effects models - putin level 2 diagnostics
+#| cache: true
+
+derivs1 <- m5p.nested@optinfo$derivs
+sc_grad1 <- with(derivs1,solve(Hessian,gradient))
+max(abs(sc_grad1))
+
+max(pmin(abs(sc_grad1),abs(derivs1$gradient)))
+
+dd <- update(m5p.nested,devFunOnly=TRUE)
+pars <- unlist(getME(m5p.nested,c("theta","fixef")))
+grad2 <- grad(dd,pars)
+hess2 <- hessian(dd,pars)
+sc_grad2 <- solve(hess2,grad2)
+max(pmin(abs(sc_grad2),abs(grad2)))
+
+# Fit with all optimizers (loaded with other models)
+# m5p.allfit <- allFit(m5p.nested, maxfun = 1e9)
+
+# No options seem to work
+m5p.allfit_OK <- m5p.allfit[sapply(m5p.allfit, is, "merMod")]
+lapply(m5p.allfit_OK, function(x) x@optinfo$conv$lme4$messages)
+
+# Check for singular fit 
+tt <- getME(m5p.nested,"theta")
+ll <- getME(m5p.nested,"lower")
+min(tt[ll==0]) # Nope, no singular fit
+
+# The only other thing to try is to see whether the coefficients change in unconverged models
+is.OK <- sapply(m5p.allfit, is, "merMod")
+m5p.allfit.OK <- m5p.allfit[is.OK]
+lapply(m5p.allfit.OK,function(x) x@optinfo$conv$lme4$messages)
+
+(lliks <- sort(sapply(m5p.allfit.OK,logLik)))
+m5p.allfit.fixef <- t(sapply(m5p.allfit.OK,fixef))
+m5p.allfit.fixef.m <- melt(m5p.allfit.fixef)
+models <- levels(m5p.allfit.fixef.m$Var1)
+m5p.allfit.fixef.m <- transform(m5p.allfit.fixef.m, Var1 = factor(Var1, levels = names(lliks)))
+
+ggplot(m5p.allfit.fixef.m[1:98, ], 
+       aes(x = value, y = Var1, colour = Var1)) +
+  geom_point() +
+  facet_wrap(~ Var2, scale = "free") +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_discrete(breaks = models,
+                   labels = substr(models, 1, 3)) +
+  labs(x = "", y = "") + 
+  theme_minimal() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(m5p.allfit.fixef.m[99:189, ], 
+       aes(x = value, y = Var1, colour = Var1)) +
+  geom_point() +
+  facet_wrap(~ Var2, scale = "free") +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_discrete(breaks = models,
+                   labels = substr(models, 1, 3)) +
+  labs(x = "", y = "") + 
+  theme_minimal() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### Non-systemic v systemic opposition
+
+```{r}
+#| label: mixed effects models - opposition types 
+#| eval: false
+
+# Non-systemic - Davankov or Spoiled (1) vs systemic - Haritonov, Slutsky (0) 
+# opposition, declined to answer and Putin are NA
+m4s.nested <- glmer(nonsys_sys ~ sex + age_bin + time_to_vs.less_than_hour
+                    + out_of_Russia_time + result_trust_bin
+                    + (1 | countryname_en.x), 
+                    data = nested_me_data, family = binomial,
+                    control = glmerControl(optimizer = "bobyqa"))
+
+summary(m4s.nested)
+```
+
+```{r}
+#| label: mixed effects models - opposition types level 2
+#| eval: false
+
+m5s.nested <- glmer(nonsys_sys ~ sex + age_bin + time_to_vs.less_than_hour
+                    + out_of_Russia_time + result_trust_bin
+                    + orthodox_share + vdem_polyarchy_2022 
+                    + log(mad_gdppc_2018) + obl_type + export_share
+                    + import_share + friendly_status  + help + military_dummy
+                    + log(dist) + (1 | countryname_en.x), 
+                    data = nested_me_data, family = binomial,
+                    control = glmerControl(optimizer = "bobyqa", 
+                                           optCtrl = list(maxfun = 1e9)))
+
+# Singular fit! 
+
+# The predictors most likely to cause issues are obl_type and friendly_status
+# as they are broadly (and correlated between themselves and other variables) 
+# defined dichotomous predictors. Remove them from the model and try again
+
+```
+
+```{r}
+#| label: mixed effects models - opposition types level 2 reduced
+#| eval: false
+
+m5s.red <- update(m5s.nested, ~ . - obl_type - friendly_status)
+
+# Works great and no issues with convergence either
+
+```
+
+
+### Davankov v spoiled
+
+```{r}
+#| label: mixed effects models - davankov
+#| eval: false
+
+# Davankov (1) vs Spoiled (0) declined to answer, Haritonov, Slutsky and Putin
+# are NA
+m4d.nested <- glmer(davankov_spoiled ~ sex + age_bin + time_to_vs.less_than_hour
+                    + out_of_Russia_time + result_trust_bin
+                    + (1 | countryname_en.x), 
+                    data = nested_me_data, family = binomial,
+                    control = glmerControl(optimizer = "bobyqa"))
+
+summary(m4d.nested)
+```
+
+```{r}
+#| label: mixed effects models - davankov level 2
+#| eval: false
+
+m5d.nested <- glmer(davankov_spoiled ~ sex + age_bin + time_to_vs.less_than_hour
+                    + out_of_Russia_time + result_trust_bin
+                    + orthodox_share + vdem_polyarchy_2022 
+                    + log(mad_gdppc_2018) + obl_type + export_share
+                    + import_share + friendly_status  + help + military_dummy
+                    + log(dist) + (1 | countryname_en.x), 
+                    data = nested_me_data, family = binomial,
+                    control = glmerControl(optimizer = "bobyqa", 
+                                           optCtrl = list(maxfun = 1e9)))
+```
+
+```{r}
+#| label: mixed effects models - davankov level 2 diagnostics
+#| cache: true
+
+derivs1 <- m5d.nested@optinfo$derivs
+sc_grad1 <- with(derivs1,solve(Hessian,gradient))
+max(abs(sc_grad1))
+
+max(pmin(abs(sc_grad1),abs(derivs1$gradient)))
+
+dd <- update(m5d.nested, devFunOnly=TRUE)
+pars <- unlist(getME(m5d.nested,c("theta", "fixef")))
+grad2 <- grad(dd,pars)
+hess2 <- hessian(dd,pars)
+sc_grad2 <- solve(hess2, grad2)
+max(pmin(abs(sc_grad2), abs(grad2)))
+
+# Fit with all optimizers (loaded with other models)
+# m5d.allfit <- allFit(m5d.nested, maxfun = 1e9)
+
+# No options seem to work
+m5d.allfit_OK <- m5d.allfit[sapply(m5d.allfit, is, "merMod")]
+lapply(m5d.allfit_OK, function(x) x@optinfo$conv$lme4$messages)
+
+# Check for singular fit 
+tt <- getME(m5d.nested,"theta")
+ll <- getME(m5d.nested,"lower")
+min(tt[ll==0]) # Nope, no singular fit
+
+# The only other thing to try is to see whether the coefficients change in 
+# unconverged models
+is.OK <- sapply(m5d.allfit, is, "merMod") 
+m5d.allfit.OK <- m5d.allfit[is.OK]
+lapply(m5d.allfit.OK,function(x) x@optinfo$conv$lme4$messages)
+
+(lliks <- sort(sapply(m5d.allfit.OK,logLik)))
+m5d.allfit.fixef <- t(sapply(m5d.allfit.OK,fixef))
+m5d.allfit.fixef.m <- melt(m5d.allfit.fixef)
+models <- levels(m5d.allfit.fixef.m$Var1)
+m5d.allfit.fixef.m <- transform(m5d.allfit.fixef.m,
+                                Var1 = factor(Var1, levels = names(lliks)))
+
+ggplot(m5d.allfit.fixef.m[1:98, ], 
+       aes(x = value, y = Var1, colour = Var1)) +
+  geom_point() +
+  facet_wrap(~ Var2, scale = "free") +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_discrete(breaks = models,
+                   labels = substr(models, 1, 3)) +
+  labs(x = "", y = "") + 
+  theme_minimal() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(m5d.allfit.fixef.m[99:189, ], 
+       aes(x = value, y = Var1, colour = Var1)) +
+  geom_point() +
+  facet_wrap(~ Var2, scale = "free") +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_discrete(breaks = models,
+                   labels = substr(models, 1, 3)) +
+  labs(x = "", y = "") + 
+  theme_minimal() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+#| eval: false
+
+save(list = c("m5a.nested", "m5p.nested", "m5s.nested", "m5s.red", "m5d.nested"), 
+     file = "nlme_bobyqa.RData")
+
+save(list = c("m4a.nested", "m4p.nested", "m4s.nested", "m4d.nested"), 
+     file = "feme_bobyqa.RData")
+
+save(list = c("m5a.allfit", "m5p.allfit", "m5d.allfit"), 
+     file = "me_allfit.RData")
+```
+
+```{r}
+#| label: mixed effects models - table 1
+#| results: asis
+
+resizebox.stargazer(m4a.nested, m4p.nested, m4s.nested, m4d.nested, 
+          title = "Mixed effects models, level 1", header = F,
+          dep.var.labels = c("Declined to answer vs answer", 
+                             "Putin vs everyone else", 
+                             "Non-systemic vs systemic opposition",
+                             "Davankov vs Spoiled"),
+          tab.height = "\\textheight", tab.width= "\\textwidth")
+
+m3.answer <- models(m3.nested.fe, 1)
+m3.putin <- models(m3.nested.fe, 2)
+m3.nonsys <- models(m3.nested.fe, 3)
+m3.davankov <- models(m3.nested.fe, 4)
+
+
+resizebox.stargazer(m4a.nested, m3.answer, m4p.nested, m3.putin, 
+          title = "Mixed effects models, comparison I", header = F,
+          omit = "as.factor",
+          dep.var.labels = c("Declined to answer vs answer", 
+                             "Declined to answer vs answer", 
+                             "Putin vs everyone else", 
+                             "Putin vs everyone else"
+                             ),
+          tab.height = "\\textheight", tab.width= "\\textwidth")
+
+resizebox.stargazer(m4s.nested, m3.nonsys, m4d.nested, m3.davankov, 
+          title = "Mixed effects models, comparison II", header = F,
+          omit = "as.factor",
+          dep.var.labels = c("Non-systemic vs systemic opposition",
+                             "Non-systemic vs systemic opposition",
+                             "Davankov vs Spoiled",
+                             "Davankov vs Spoiled"
+                             ),
+          tab.height = "\\textheight", tab.width= "\\textwidth")
+
+resizebox.stargazer(m5a.nested, m5p.nested, m5s.red, m5d.nested, 
+          title = "Mixed effects models with level 2", header = F,
+          omit = "as.factor",
+          dep.var.labels = c("Declined to answer vs answer", 
+                             "Putin vs everyone else", 
+                             "Non-systemic vs systemic opposition",
+                             "Davankov vs Spoiled"
+                             ),
+          tab.height = "\\textheight", tab.width= "\\textwidth")
+
+resizebox.stargazer(m4a.nested, m5a.nested, m4p.nested, m5p.nested, 
+          title = "Mixed effects models with level 2, comparison I", header = F,
+          omit = "as.factor",
+          dep.var.labels = c("Declined to answer vs answer", 
+                             "Declined to answer vs answer", 
+                             "Putin vs everyone else", 
+                             "Putin vs everyone else"
+                             ),
+          tab.height = "\\textheight", tab.width= "\\textwidth")
+
+resizebox.stargazer(m4s.nested, m5s.red, m4d.nested, m5d.nested, 
+          title = "Mixed effects models with level 2, comparison II", header = F,
+          omit = "as.factor",
+          dep.var.labels = c("Non-systemic vs systemic opposition",
+                             "Non-systemic vs systemic opposition",
+                             "Davankov vs Spoiled",
+                             "Davankov vs Spoiled"
+                             ),
+          tab.height = "\\textheight", tab.width= "\\textwidth")
+```
