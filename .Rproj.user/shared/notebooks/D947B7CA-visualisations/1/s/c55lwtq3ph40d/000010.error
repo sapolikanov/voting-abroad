@@ -1,1 +1,0 @@
-{"frames":[],"message":"Error in mutate(ne_countries(scale = \"medium\", returnclass = \"sf\"), countrycode_c = countrycode(as.numeric(iso_n3_eh),  : \n  could not find function \"mutate\"\n"}

@@ -1,5 +1,0 @@
-"0","#| label: packages"
-"0","#| cache: false"
-"0",""
-"0","source(here::here(""utilities"", ""check_packages.R""))"
-"0","source(here::here(""utilities"", ""functions.R""))"

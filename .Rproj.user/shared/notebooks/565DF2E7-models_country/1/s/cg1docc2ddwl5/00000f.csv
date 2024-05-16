@@ -1,4 +1,0 @@
-"0","#| label: check models"
-"0","#| output: false"
-"0",""
-"0","check_m2p <- plot(check_model(m2p))"

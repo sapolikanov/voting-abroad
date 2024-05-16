@@ -1,9 +1,0 @@
-"0","# Answer (1) vs non-answer (0)
-m4a.nested <- glmer(non_answer ~ sex + age_bin + time_to_vs.less_than_hour
-                    + out_of_Russia_time + result_trust_bin
-                    + (1 | countryname_en), 
-                    data = nested_me_data, family = binomial,
-                    control = glmerControl(optimizer = ""bobyqa""))
-"
-"2","Error in eval(predvars, data, env) : object 'countryname_en' not found
-"

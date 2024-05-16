@@ -1,8 +1,0 @@
-"0","#| label: prep world vizualisations"
-"0",""
-"0","world <- ne_countries(scale = ""medium"", returnclass = ""sf"") |> "
-"0","  mutate(countrycode_c = countrycode(as.numeric(iso_n3_eh), origin = ""iso3n"","
-"0","                                     destination = ""iso3c""))"
-"2","Error in mutate(ne_countries(scale = ""medium"", returnclass = ""sf""), countrycode_c = countrycode(as.numeric(iso_n3_eh),  : 
-  could not find function ""mutate""
-"

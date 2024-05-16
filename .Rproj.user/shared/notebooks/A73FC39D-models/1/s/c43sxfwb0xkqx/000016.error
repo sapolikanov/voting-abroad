@@ -1,1 +1,0 @@
-{"frames":[{"func":"save(list = list(\"m3.nested\", \"m3.nested.fe\"), file = here(\"scripts\", \n    \"models\", \"nl_fe.RData\"))","file":"","line_number":0,"end_line_number":0,"character_number":0,"end_character_number":0}],"message":"Error in save(list = list(\"m3.nested\", \"m3.nested.fe\"), file = here(\"scripts\",  : \n  first argument must be a character vector\n"}
