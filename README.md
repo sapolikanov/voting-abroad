@@ -1,6 +1,8 @@
 # Voting Abroad
 ## Data analysis of exit polls and official results of the 2024 Russian presidential election abroad
 
+I could not fully reproduce the paper.qmd file on my machine in a different project or on Vera's one. Renv fails to download some packages and also throws very weird YAML errors. Sincerely hope this is enough.
+
 Patrick, welcome. This is organized to be as reproducible as possible (unfortunately not fully). Here is a non-technical description of how everything works. 
 
 Raw data lives in the data/data_raw folder. It is untouched and sacred, even though some of it was hand-coded. data/data_built is a folder with built datasets from data_raw. raw_data_prep.R and data_building.R are responsible for that - they live in scripts/data_building. data_built is fully wiped on project render only. Then there are quarto notebooks for different purposes. They are (in order of rendering):
