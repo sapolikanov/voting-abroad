@@ -1,0 +1,28 @@
+{
+    "id": "F851C173",
+    "path": "~/GitHub/voting-abroad/scripts/country_level/models_country.qmd",
+    "project_path": "scripts/country_level/models_country.qmd",
+    "type": "quarto_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1715784818248.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "rmdVisualMode": "false",
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "86,63",
+        "scrollLine": "104"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1715885869,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1715885869,
+    "read_only": false,
+    "read_only_alternatives": []
+}

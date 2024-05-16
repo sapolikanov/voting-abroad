@@ -436,6 +436,8 @@ INPUT .\logo_uc3m.png
 INPUT .\logo_uc3m.png
 INPUT C:\Users\Stepan Polikanov\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecss0500.tfm
 INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\map\pdftex\pdftex.map
+INPUT C:\Users\Stepan Polikanov\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecss0900.tfm
+INPUT C:\Users\Stepan Polikanov\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecss0800.tfm
 OUTPUT presentation.nav
 OUTPUT presentation.toc
 OUTPUT presentation.snm
@@ -444,9 +446,15 @@ INPUT .\presentation.out
 INPUT .\presentation.out
 INPUT presentation.run.xml
 OUTPUT presentation.run.xml
+INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecss0800.pk
+INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecss0800.pk
+INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecss0900.pk
+INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecss0900.pk
 INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecss1000.pk
 INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecss1000.pk
 INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecsi1000.pk
 INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecsi1000.pk
 INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecss1440.pk
 INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecss1440.pk
+INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecss0500.pk
+INPUT C:\Users\Stepan Polikanov\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecss0500.pk

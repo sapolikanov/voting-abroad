@@ -1,0 +1,410 @@
+---
+title: "Problem Set 05"
+subtitle: "AQMSS II"
+author: "Polikanov Stepan"
+format:
+  pdf:
+    code_download: true
+    fontsize: 11pt
+    highlight-style: kate
+    fig-width: 10
+    fig-height: 6
+    include-in-header:
+      - text: |
+          \addtokomafont{disposition}{\rmfamily} 
+          \AddToHook{env/Highlighting/begin}{\scriptsize} 
+          \usepackage{float} 
+          \usepackage{longtable} 
+embed-resources: true
+execute: 
+  echo: true
+  warning: false
+  error: false
+  message: false
+---
+
+```{r}
+#| label: setup chunk
+
+  ## Required packages
+  packages <- c("here", "haven", "readxl", "MASS", "nnet",
+                "tidyverse", "labelled", "conflicted", "performance"
+                , "marginaleffects", "stargazer", "kableExtra")
+    
+  ## Install packages not yet installed
+  installed_packages <- packages %in% rownames(installed.packages())
+    if (any(installed_packages == FALSE)) {
+      install.packages(packages[!installed_packages])
+    }
+    
+  ## Load package
+  invisible(lapply(packages, library, character.only = TRUE))
+  
+  # Define global functions
+
+  ## Fitting stargazer onto the page
+  resizebox.stargazer = function(..., tab.width = "!", tab.height = "!")
+      {
+    require(stringr) 
+    res = capture.output(stargazer::stargazer(...))
+    tab.width = tab.width
+    tab.height = tab.height
+    res = prepend(res, "}", before = length(res))
+  
+    res = c(res[1:str_which(res, "^\\\\begin\\{tabular\\}.*")-1],
+        paste0("\\resizebox*{",tab.width,"}{",tab.height,"}{%"),
+        res[str_which(res, "^\\\\begin\\{tabular\\}.*"):length(res)]
+        )
+    cat(res, sep = "\n")
+  }
+
+options(scipen = 999)
+conflict_prefer("select", "dplyr")
+
+```
+
+# Review of Key Theoretical Concepts
+
+## Question 1
+
+If I am interested in the determinants of only one of the categories of the dependent variable I would use a binary logit model or indeed a linear model fitted to binary data. Those are easy to estimate and interpret, provide focused analysis and are easy to integrate with multiple levels designs. On the other hand some assumptions are likely to be violated and the information may be lost.
+
+If I am interested in ideological preferences as expressed through voting, an ordinal model with categories along a single left-right dimension would be appropriate. There would be issues - in particular proportional odds are not likely to hold in this setup, but the model utilizes all of the available information and that assumption can be relaxed.
+
+Lastly, if I am interested in vote choice as a whole, I would use a multinomial model. It would model all relationships between categories explicitly - however it might be inflexible and not very focused. A nested logit might help when trying to analyze vote choices with few categories, as multiple nestings are easy to consider.
+
+The researcher's approach is one of the worse ways to handle this data. Discarding data in such a way creates a false dichotomy and loses information. This means that the researcher is only studying people who might choose left or right - which means that only relatively stable and ideologically driven voters are considered. This is a problem as some people might lean right but vote center or vice-versa and all of data on those is lost. If she must do this, I would recommend a nested approach - a vote first chooses between center or ideologically salient parties and then if not voting for the center the proposed model is run. 
+
+## Question 2
+
+Mean should equal variance, which follows from the Poisson distribution parameters. We can simply calculate the mean and variance of the variable and check if they are equivalent. 
+
+## Question 3
+
+I would argue that marginal effects given causal interpretations is indeed a misinterpretation of what they are - like linear regression coefficients they do not contain any causal interpretation in and of themselves. However, this doesn't mean that they can't. Without talking about much-discussed DiDs, RDDs, IVs and other designs, there should be no endogeneity, that is, ommited variables (or rather possibility of ommited variables) or unaccounted selection, spillover or other effects. This is hard to get and even harder to justify in observational research. I am conflicted on this. On one hand, I do believe that not overinterpreting and inferring causality from where there isn't any is a good thing. On the other hand the notion that if any IV is slapped onto a design and it immediately becomes causal, and what is more worrying, publishable, is ridiculous. In this day and age we should probably agree that we can't give causal interpretations when not using quasi-experimental designs on observational data. However the causality is not an attribute of the data - or a regression model - it is conceptual and should be argued on the basis of theory and context.
+
+\newpage
+
+# Working with German Election Data: Ordinal
+
+```{r}
+#| label: data
+
+data <- read_dta(here("scripts", "data", "gles2017.dta")) |> 
+  mutate(across(everything(), ~ if_else(. %in% c(-99:-71), NA, .))) |> 
+  remove_labels()
+```
+
+## Question 1a
+
+```{r}
+#| label: recoding q10
+
+data.q10 <- data |> 
+  mutate(q10.ord = factor(case_when(!q10 %in% c(1, 2, 3, 4, 5) ~ NA,
+                                       TRUE ~ q10),
+                          levels = c(1, 2, 3, 4, 5),
+                          labels = c("Certain to vote", "Likely to vote",
+                                     "Might vote", "Unlikely to vote",
+                                     "Certain not to vote")), ordered = TRUE)
+```
+
+To model the ordinal variable I am going to use the ordered logit model. The key assumption of the model is one of proportional odds. The relationship between each pair of outcomes should be the same, which amounts to saying that predictors should react the same to an increase from "likely to vote" to "certain to vote" as they will to an increase from "certain not to vote" to "likely not to vote". As the model is essentially an extension to binary outcome logit it also inherents its (few) assumptions. 
+Alternative approaches include dichotomizing the dependent variable in whichever way makes sense theoretically and doing binary logit; using multinomial models; or simply fitting a linear model. I feel like the first doesn't make much sense in this context as we are not particularly interested in any one of the response categories. For example it doesn't really make sense to look only at the "certain to vote" category as the "likely to vote" category is of the same nature. Unifying categories in any way implies loss of information which I don't feel is justified. Multinomial models are way too inflexible for the data - if proportional odds is violated then the better choice is to use a partial proportional odds model which explicitly relaxes the assumption for some variables but not the others. Moreover, information contained in the ordering is also lost. Finally, using a linear model inevitably implies violating its assumptions, namely that distance between categories is the same.
+
+## Question 1b
+
+My main predictor variable is `Vw053` - main source of information. The idea is that different information mediums produce different political incentives. Here I test the mechanical relationship without the focus on how precisely these different media might shape intention to vote. 
+
+I deploy a usual set of controls: sex, age, marital status, employment status, religion. I also use a variable possibly important for Germany specifically - whether the respondent was born in East or West Germany. I unite this variable with the immigrant question. I also use state and election district fixed effects based on where the respondent lives now.
+
+I recode multiple variables. The main independent variable - source of information - is modified by combining "Social media" and "Other internet sources" categories into a single "Internet" category. I reduce the number of categories in the Marital status variable by combining living together and apart for married and same-sex unions. I also build the birthplace variable by combining two immigrant questions. It now has three categories: born abroad, born in West Germany or born in East Germany. Lastly I recode the employment categories bunching them up into general "Working", "Unemployed", "Community service" (because I don't really know what that means in context), and "Studying". All of the above simplify interpretations and in some cases allow me to avoid singular fits/low cell counts. 
+
+
+```{r}
+#| label: variables
+
+data.vars <- data.q10 |> 
+  select(q10.ord, q11ba, q1, q2a, q91, q134, q138, q168, q172, q173, bula, wahlkreis) |> 
+  mutate(source = relevel(factor(
+           case_when(q91 %in% c(4, 5) ~ "Internet", 
+                     q91 == 1 ~ "Television", 
+                     q91 == 2 ~ "Newspapers", 
+                     q91 == 3 ~ "Radio",
+                     q91 == 6 ~ "Conversations")),
+           ref = "Television"),
+         employment = relevel(factor(
+           case_when(q138 %in% c(1, 2, 3, 8, 11) ~ "Working",
+                     q138 %in% c(4, 5, 6) ~ "Studying",
+                     q138 == 9 ~ "Community service",
+                     q138 %in% c(7, 10, 12) ~ "Unemployed")), ref = "Working"),
+         religion = relevel(factor(q168), ref = "9"),
+         age = 2017 - q2a,
+         marital = relevel(factor(case_when(q134 %in% c(1, 2) ~ "Married", 
+                             q134 %in% c(3, 4) ~ "Same-sex union",
+                             q134 == 5 ~ "Never married",
+                             q134 == 6 ~ "Divorced",
+                             q134 == 7 ~ "Widowed")),
+                           ref = "Never married"),
+         birthplace = relevel(factor(
+           case_when(q172 == 2 ~ "Foreign",
+                     # I count Berlin as East Germany
+                     q172 == 1 & q173 %in% c(3, 4, 8, 13, 14, 16)
+                     ~ "East Germany",
+                     q172 == 1 & q173 %in% c(1, 2, 5, 6, 7, 9, 10, 11, 12, 15)
+                     ~ "West Germany")), 
+           ref = "West Germany"))
+```
+
+
+## Question 1c
+
+I estimate two models: one without fixed and one with state fixed effects (I don't include the district fixed effects as they produce singular fits). The results are in \hyperref[t1]{Table 1}.
+
+```{r}
+#| label: model
+
+m1 <- polr(q10.ord ~ source + q1 + age + marital + employment + religion + birthplace, 
+           data = data.vars, Hess = TRUE)
+
+m2 <- polr(q10.ord ~ source + q1 + age + marital + employment + religion + birthplace +
+             as.factor(bula), 
+           data = data.vars, Hess = TRUE)
+```
+```{r}
+#| label: results
+#| results: asis
+
+resizebox.stargazer(m1, m2, tab.height = "\\textheight", 
+          omit = c("bula", "wahlkreis"), table.placement = "H",
+          dep.var.labels = "Intention to vote, from certain to not at all certain",
+          title = "Ordinal baseline models", label = "t1",
+          covariate.labels = c("Source of information: Conversations (ref TV)",
+                               "Source of information: Internet (ref TV)",
+                               "Source of information: Newspapers (ref TV)",
+                               "Source of information: Radio (ref TV)",
+                               "Gender: Female",
+                               "Age",
+                               "Marital status: Divorced (ref Never married)",
+                               "Marital status: Married (ref Never married)",
+                               "Marital status: Same-sex union (ref Never married)",
+                               "Marital status: Widowed (ref Never married)",
+                               "Employment: Community sevice (ref Working)",
+                               "Employment: Studying (ref Working)",
+                               "Employment: Unemployed (ref Working)",
+                               "Religion: German Protestant church (ref None)",
+                               "Religion: Protestant free church (ref None)",
+                               "Religion: Roman Catholic church (ref None)",
+                               "Religion: another Christian (ref None)",
+                               "Religion: Islam (ref None)",
+                               "Religion: Another non-Christian (ref None)",
+                               "Birthplace: East Germany (ref West Germany)",
+                               "Birthplace: Foreign (ref West Germany)"
+                               ), ord.intercepts = T, header = F,
+          add.lines = list(c("Fixed effects", "No", "States")))
+```
+
+I interpret the "main source of information" variable as it is of substantive interest. I am going to be using risk ratios to interpret coefficients given the ordering of the variable (risk of having no intention of voting).
+
+\begin{itemize}
+  \item The odds of having no intention to vote on average is $(1 - exp(-0.429))*100 = 34.9\%$ lower for those who get their information from conversations compared to those who get it from television all other variables held equal.
+  \item The odds of having no intention to vote on average is $(1 - exp(-0.501))*100 = 39.4\%$ lower for those who get their information from the Internet compared to those who get it from television all other variables held equal. This effect is significant.
+  \item The odds of having no intention to vote on average is $(1 - exp(-0.946))*100 = 61.2\%$ lower for those who get their information from newspapers compared to those who get it from television all other variables held equal. This effect is significant.
+  \item The odds of having no intention to vote on average is $(exp(0.187) - 1)*100 = 21\%$ higher for those who get their information from radio compared to those who get it from television all other variables held equal. 
+\end{itemize}
+
+## Question 1d
+
+```{r}
+#| label: marginal effect of source
+
+plot_predictions(m1, by = c("source", "group")) + 
+  scale_color_manual(values = c("#de01d1", "#70bace", "#ffbad1",
+                                "#007dd4", "#d1b6ff")) +
+  labs(y = "\nPr of choosing an answer", x = "Main source of information\n",
+       color = "Answer",
+       title = "Vote intention by main source of information") +
+  theme_minimal() + 
+  coord_flip()
+```
+
+For all categories of the predictor the probability of choosing "certain to vote" is dominant. There are subtle differences - for example having newspapers as the main source of information gives a slightly higher probability of choosing "certain to vote" compared to the other categories, while radio seems to depress odds of going to the polls. Conversations is the least precisely estimated category.
+
+## Question 1e
+
+I interact the main source of information with the birthplace variable. The idea is that the effect of the source of information might be different for those born in East Germany, West Germany or abroad.
+
+```{r}
+#| label: interaction
+
+m1b <- polr(q10.ord ~ source + q1 + age + marital + employment + religion + birthplace
+            + source*birthplace, 
+           data = data.vars, Hess = TRUE)
+
+m2b <- polr(q10.ord ~ source + q1 + age + marital + employment + religion + birthplace
+            + source*birthplace 
+            + as.factor(bula), 
+           data = remove_labels(data.vars), Hess = TRUE)
+
+plot_predictions(m1b, by = c("source", "group", "birthplace"), 
+                 type = "probs") +
+  facet_wrap(~ birthplace, nrow = 3) +
+  scale_color_manual(values = c("#de01d1", "#70bace", "#ffbad1",
+                                "#007dd4", "#d1b6ff")) +
+  labs(y = "\nPr of choosing an answer", x = "Main source of information\n",
+       color = "Answer",
+       title = "Vote intention by main source of information and place of birth") +
+  theme_minimal() + 
+  coord_flip()
+```
+
+Overall, the results from the previous section are replicated. There is one important exception - Radio. For those born in East Germany Radio has a mobilizing effect, while for those born in West Germany having it as a most important source of information has a demobilizing effect. Substantively I think it has to do with where people live now and what sort of radio stations are available to them. If it is more likely you will live where you were born then the effect is likely capturing the differences in local radio stations of eastern and western Germany. Regardless it is an interesting result.
+
+## Question 1f 
+
+```{r}
+#| label: performance ordinal
+
+kable(compare_performance(m1, m1b, metrics = "all", rank = T), digits = 2, booktabs = T) |> 
+  kable_styling(latex_options = "scale_down", font_size = 8)
+```
+
+The model with an interaction term is not significantly different to the one without it. While AIC and BIC are higher for the former by > 10, other metrics indicate that there are no differences. By these results I should conclude that the interaction models is better, however I simply don't think it adds anything of value from a theoretical standpoint. 
+
+\newpage
+
+# Working with the German Election Data: Multinomial
+
+## Question 2a
+
+I am going to use multinomial models to deal with vote choices. The underlying assumptions of the model are largely the same - with the addition that the outcome categories must be mutually exclusive and exhaustive. Alternative approaches include using dichotomized outcomes with discrete logit models or nested logit models. The former loses information, the latter is not straightforward in this case as vote choices are many and cannot be effectively grouped. 
+
+```{r}
+#| label: recoding q11ab
+
+data.q11ba <- data.vars |> 
+  mutate(q11ba_ = relevel(factor(q11ba, levels = c(1, 4, 5, 6, 7, 322, 801), 
+                          labels = c("CDU/CSU", "SPD", "Die Linke", "Grüne",
+                                   "FDP", "AfD", "Other")), ref = "CDU/CSU"))
+```
+
+
+## Question 2b
+
+I will be using the same variables as in the previous analysis. This is because I think it is substantively interesting to see whether variation in information sources can explain variation in vote choices. I will also include the same set of controls. 
+
+## Question 2c
+
+```{r}
+#| label: model multinomial
+#| results: hide
+
+m3 <- multinom(q11ba_ ~ source + q1 + age + marital + employment + religion + birthplace, 
+               data = data.q11ba)
+
+m4 <- multinom(q11ba_ ~ source + q1 + age + marital + employment + religion + birthplace
+               + as.factor(bula), 
+               data = data.q11ba)
+```
+
+```{r}
+#| label: results multinomial
+#| results: asis
+
+resizebox.stargazer(m3, m4, tab.height = "\\textheight", tab.width = "\\linewidth",
+          omit = c("bula", "wahlkreis"), table.placement = "H",
+          column.labels = c("Model 1: base", "Model 2: fixed effects"),
+          column.separate = c(6, 6), 
+          title = "Multinomial baseline models", label = "t2",
+          covariate.labels = c("Source of information: Conversations (ref TV)",
+                               "Source of information: Internet (ref TV)",
+                               "Source of information: Newspapers (ref TV)",
+                               "Source of information: Radio (ref TV)",
+                               "Gender: Female",
+                               "Age",
+                               "Marital status: Divorced (ref Never married)",
+                               "Marital status: Married (ref Never married)",
+                               "Marital status: Same-sex union (ref Never married)",
+                               "Marital status: Widowed (ref Never married)",
+                               "Employment: Community sevice (ref Working)",
+                               "Employment: Studying (ref Working)",
+                               "Employment: Unemployed (ref Working)",
+                               "Religion: German Protestant church (ref None)",
+                               "Religion: Protestant free church (ref None)",
+                               "Religion: Roman Catholic church (ref None)",
+                               "Religion: another Christian (ref None)",
+                               "Religion: Islam (ref None)",
+                               "Religion: Another non-Christian (ref None)",
+                               "Birthplace: East Germany (ref West Germany)",
+                               "Birthplace: Foreign (ref West Germany)"
+                               ), header = F,
+          add.lines = list(c("Fixed effects", "No", "No", "No", "No", "No", "No",
+                             "States", "States", "States", "States", "States",
+                             "States")))
+```
+
+As I compare the log odds of vote choices against the referent and widely known CDU/CSU alliance, the interpretations are the following (I interpret only significant coefficients in the non-FE model):
+
+\begin{itemize}
+  \item The odds of voting for AfD rather than for CDU/CSU are on average $(exp(1.457) - 1)*100 = 329\%$ higher for those who get their information from conversations compared to those who get it from television all other variables held equal.
+  \item The odds of voting for AfD rather than for CDU/CSU are on average $(exp(1.337) - 1)*100 = 280\%$ higher for those who get their information from the Internet compared to those who get it from television all other variables held equal.
+  \item The odds of voting for "Other" (smaller) parties rather than for CDU/CSU are on average $(exp(1.530) - 1)*100 = 362\%$ lower for those who get their information from the Internet compared to those who get it from television all other variables held equal.
+  \item The odds of voting for Die Linke rather than for CDU/CSU are on average $(exp(0.564) - 1)*100 = 76\%$ higher for those who get their information from newspapers compared to those who get it from television all other variables held equal.
+  \item The odds of voting for The Greens rather than for CDU/CSU are on average $(exp(0.564) - 1)*100 = 76\%$ higher for those who get their information from newspapers compared to those who get it from television all other variables held equal.
+\end{itemize}
+
+## Question 2d
+
+```{r}
+#| label: marginal effect of source multinomial
+
+plot_predictions(m3, by = c("source", "group")) + 
+  facet_wrap(~ group, nrow = 4) +
+  scale_color_manual(values = c("#974a98", "#52808d", "#c7009f","#d3cdff",
+                                "#ff87dd", "#4967a2", "#d17593")) +
+  labs(y = "\nPr of choosing an answer", x = "Main source of information\n",
+       color = "Answer",
+       title = "Vote choice by main source of information") +
+  theme_minimal() + 
+  coord_flip()
+```
+
+We can see some effect of different information sources on party choice based on this graph. For instance, getting your information from the Internet is negatively associated with voting for the (then) ruling CDU/CSU. On the other hand for television the probability to choose this party is much larger. Conversations appear to be linked with right-wing voting - as for example those that get their information that way are more likely to choose AfD and simultaneously much less likely to vote for the Greens. 
+
+## Question 2e
+
+```{r}
+#| label: interaction multinomial
+#| results: hide
+
+m3a <- multinom(q11ba_ ~ source + q1 + age + marital + employment + religion + birthplace +
+                  source*birthplace, 
+               data = data.q11ba)
+```
+
+```{r}
+#| label: predictions interaction multinomial
+
+plot_predictions(m3a, by = c("source", "birthplace", "group"), 
+                 type = "probs") +
+  facet_wrap(~ group, nrow = 4) +
+  scale_color_manual(values = c("#974a98", "#d3cdff", "#4967a2")) +
+  labs(y = "\nPr of choosing an answer", x = "Main source of information\n",
+       color = "Born in",
+       title = "Vote choice by main source of information and place of birth") +
+  theme_minimal() + 
+  coord_flip()
+```
+
+There appear to be no meaningful differences by birthplace with regards to the main source of information's effect on vote choice.
+
+## Question 2f
+
+```{r}
+#| label: performance multinomial
+
+kable(compare_performance(m3, m3a, metrics = "all", rank = T), digits = 4, booktabs = T) |> 
+  kable_styling(latex_options = "scale_down", font_size = 8)
+```
+
+The performance metrics indicate that the interaction doesn't really bring anything meaningful to the model. Therefore I prefer the more compact model. 

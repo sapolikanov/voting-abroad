@@ -1,0 +1,30 @@
+"0","#| ;
+candidate_long <- merged |> 
+    mutate(across(9:32, ~ if_else(is.na(.), 0, .)),
+           across(c(spoiled_epalt = spoiled.abs_ep, 
+                    putin_epalt = putin.abs_ep, 
+                    davankov_epalt = davankov.abs_ep),
+                  ~ ./(spoiled.abs_ep + putin.abs_ep + davankov.abs_ep
+                       + haritonov.abs_ep + slutskiy.abs_ep
+                       + removed_or_destroyed.abs))) |> 
+    pivot_longer(cols = c(spoiled_cec, putin_cec, davankov_cec,
+                          spoiled_epalt, putin_epalt, davankov_epalt),
+                 names_to = c(""candidate"", "".value""), 
+                 names_sep = ""_"") |> 
+    mutate(candidate = factor(candidate, 
+                              levels = c(""putin"", ""davankov"", ""spoiled""),
+                              labels = c(""Putin"", ""Davankov"", ""Spoiled"")),
+           diff = cec - epalt) |> 
+    group_by(city_en) |> 
+    mutate(diff_sort = sum(abs(diff)))
+"
+"1","[1m[33mError[39m in `mutate()`:[22m
+[38;5;254m[36mℹ[38;5;254m In argument: `across(9:32, ~if_else(is.na(.), 0, .))`.[39m
+[1mCaused by error in `across()`:[22m
+[38;5;254m[33m![38;5;254m Can't compute column `voters_counted`.[39m
+[1mCaused by error in `if_else()`:[22m
+[33m![39m Can't combine `true` <double> and `false` <character>.
+Backtrace:
+[90m  1. [39m[1mdplyr[22m::mutate(...)
+[90m 13. [39m[1m[94mdplyr::if_else([39m[22mis.na(voters_counted), 0, voters_counted[1m[94m)[39m[22m
+"

@@ -1,0 +1,6 @@
+"0","#| label: load figures and graphs"
+"0",""
+"0","load(here(""paper"", ""graphs_figures.RData""))"
+"0","load(here(""scripts"", ""models"", ""nl_fe.RData""))"
+"0","load(here(""scripts"", ""models"", ""nlme_bobyqa.RData""))"
+"0","load(here(""scripts"", ""models"", ""lin.RData""))"

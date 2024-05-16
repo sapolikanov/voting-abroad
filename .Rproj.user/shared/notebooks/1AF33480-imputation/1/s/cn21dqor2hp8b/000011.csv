@@ -1,5 +1,0 @@
-"0","#| label: exam - convergence
-save(imp1, ""imp1.RData"")
-"
-"2","Error in save(imp1, ""imp1.RData"") : object ‘imp1.RData’ not found
-"

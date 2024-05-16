@@ -1,4 +1,0 @@
-"0","#| label: sourcing base dataframe"
-"0",""
-"0","source(here::here(""scripts"", ""raw_data_prep.R""))"
-"2","Warning: package ‘ggrepel’ was built under R version 4.3.3"

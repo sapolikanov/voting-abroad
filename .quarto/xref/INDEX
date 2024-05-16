@@ -1,0 +1,32 @@
+{
+  "scripts/individual-level/imputation.qmd": {
+    "imputation.tex": "79256e27"
+  },
+  "scripts/individual-level/variables_descriptives.qmd": {
+    "variables_descriptives.tex": "f8f07757"
+  },
+  "presentation/presentation_quarto.qmd": {
+    "presentation_quarto.tex": "4ddb9c3a"
+  },
+  "scripts/variables_descriptives.qmd": {
+    "variables_descriptives.tex": "f647b3ce"
+  },
+  "scripts/individual_level/variables_descriptives.qmd": {
+    "variables_descriptives.tex": "1a5e1912"
+  },
+  "scripts/individual_level/imputation.qmd": {
+    "imputation.tex": "8b4d485e"
+  },
+  "scripts/individual_level/models.qmd": {
+    "models.tex": "212b70ea"
+  },
+  "scripts/country_level/models_country.qmd": {
+    "models_country.tex": "624b7b8b"
+  },
+  "scripts/graphs/graphs.qmd": {
+    "graphs.tex": "a2e56c7f"
+  },
+  "paper/paper.qmd": {
+    "paper.tex": "d1fb3854"
+  }
+}

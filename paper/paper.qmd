@@ -1,0 +1,623 @@
+---
+title: "Voting abroad: determinants of immigrant voting patterns in 2024 Russian Presidential Elections"
+subtitle: "Final Paper for AQMSS II"
+format:
+  pdf:
+    fig-pos: "H"
+    fontsize: 11pt
+    highlight-style: kate
+    fig-width: 10
+    fig-height: 6
+    fig-cap-location: top
+    include-in-header:
+      - text: |
+          \addtokomafont{disposition}{\rmfamily} 
+          \AddToHook{env/Highlighting/begin}{\scriptsize} 
+          \usepackage{float} 
+          \usepackage[backend = biber, style = apa]{biblatex}
+          \addbibresource{bibliography.bib}
+execute: 
+  echo: true
+  warning: false
+  error: false
+  message: false
+---
+
+```{r}
+#| label: packages
+
+source(here::here("utilities", "check_packages.R"))
+source(here::here("utilities", "functions.R"))
+```
+
+```{r}
+#| label: load figures and graphs
+
+load(here("paper", "graphs_figures.RData"))
+load(here("scripts", "models", "nl_fe.RData"))
+load(here("scripts", "models", "nlme_bobyqa.RData"))
+load(here("scripts", "models", "lin.RData"))
+```
+
+\section{Introduction and Research Agenda}
+
+The right to vote in the country’s internal elections while abroad is still not universal: some countries guarantee full exercise of active voting rights for citizens abroad; in some countries these rights are partially limited (by the level of electoral events, length of residence in another country or the need to be registered at the consulate), in other cases, citizens living abroad are completely deprived of their active voting rights \parencite{collyer2013emigration}. Voting abroad remains an under-researched topic for several reasons: firstly, the lack of universal law does not allow cross-country research, and secondly, in most countries voting is secret, which does not allow the study of socio-demographic voting patterns of migrants. Key areas of research on voting abroad include the representation of non-resident citizens, the difference between voting patterns at home and abroad, and the identification of factors influencing the adoption of this practice in different states \parencite{peltoniemi2022voting, lafleur2011states, brand2010authoritarian}.
+
+Studies of voter behavior often identify two components of the voter utility function: economic and political \parencite{nannestad1994vp}, where economic reflects the material well-being of the voter, associating him with a certain party or candidate, and political reflects ideology, self-identification, religiosity and other components. However, citizens who regularly reside abroad are not under the jurisdiction of their national states, which is why the importance of economic components decreases, and political ones (especially ideological and related to identity) increase \parencite{fidrmuc2005does}. Identity is identified not only as a factor influencing support for a particular party (or candidate), but also on the decision to vote itself: studies emphasize homesickness and sense of belonging as motivators \parencite{boccagni2011reminiscences}, but not the poor integration in the host society \parencite{gherghina2023migrants}. 
+
+Voters abroad are frequently misaligned with voters at home \parencite{ battiston2020vote, vintila2023electoral, szulecki2023emigrant}, which may be due to political re-socialization, the process of the formation or transformation of a migrant's political values, beliefs and voting behavior in connection with the norms and attitudes prevailing in the host country \parencite{finifter1989party}, as well as economic (migration decisions depend on the distribution of earnings in the alternative destinations) \parencite{harris1970migration, borjas1987self, borjas1991immigration} and political selection \parencite{fidrmuc2004voice} both in the migration decision itself and in the countries of residence.  Studies of the peculiarities of voting abroad are more often carried out in relation to citizens of democratic countries, which is primarily due to the fact that autocracies generally extend voting rights to immigrants when they support the incumbent and restrict when they don’t. For this reason, very few studies explicitly link voting abroad to political out-migration or voting in protest \parencite{wellman2021emigrant, umpierrez2021political}.
+
+In 2024, Presidential elections were held in Russia, in which citizens could vote both within the country and abroad in the representative offices of the Russian Federation. According to Russian legislation, citizens living or temporarily staying abroad have the right to vote in federal elections. This practice has been in place for more than 10 years, but in 2024, elections abroad attracted a lot of international attention: 388 791 citizens around the world lined up at the Russian embassy or consulate. Despite the drop in the total number of voters abroad (in 2018, 484 275 people voted abroad), the voting results in many countries are strikingly different from previous years: in 2024, Putin received 72.54\% of the vote in foreign polling stations, while in 2018 – 85\%. Experts attribute this to the massive wave of political emigration that began after Russia’s invasion of Ukraine and continues to this day - according to various estimates, about 1 million people have left the country since February 24, 2022 \parencite{Matusevich_2024}. 
+
+```{r}
+#| fig-cap: Average percent of votes for Putin by country
+#| label: fig-f1
+
+ggplot(data_figure1, aes(fill = putin_bins)) +
+    geom_sf() +
+    scale_fill_manual(values = 
+                        c("#1984c5", "#63bff0", "#de6e56", "#bf212f"),
+                      na.translate = F) +
+    labs(fill = "% of votes",
+         caption = "\nSources: Ivan Shukshin's Telegram channel - t.me/nevybory,\nCentral Election Commission of the Russian Federation\n\nNote: Abkhazia and South Osetia not shown"
+         ) +
+    theme_void() +
+    coord_sf(ylim = c(-55, 90))
+```
+
+
+In many countries, the incumbent president lost the election for the first time,\footnote{For example, at a polling station in Madrid in 2024, 38.17\% of voters voted for Putin, in 2018 - 71.93\%.} but in other countries the situation has hardly changed.\footnote{For example, in Belarus, where in 2018 Putin received 83.33\% of the votes and in 2024 - 84\%.} The head of the Central Election Commission of the Russian Federation associated the low percentage of votes for Putin in countries with a large number of relocants (migrants) in these countries, and also noted the high number of spoiled ballots at these polling stations \parencite{INTERFAX.RU_2024}, which was one of the opposition strategies of voters in the elections \parencite{Mineeva_2024}. Thus, this case is promising for studying the relationship between political migration and voting abroad in autocracies, and can also shed light on the role of individual characteristics of voters and the characteristics of their host countries in the choice of electoral strategy.
+
+The research question of the work is "which individual and country-level characteristics can predict the results of the Russian presidential elections 2024 abroad"? In other words, we aim to find a set of variables that capture individual migrant attitudes and the countries' contexts they are realised in. This paper puts forward the following hypotheses:
+
+\textbf{H1:} \textit{There are no substantive differences between demographic structure of those voting for the incumbent abroad and in Russia.}
+
+Past studies of voting patterns in Russia show that, on average, older women, people with low levels of education and people with low levels of economic wealth vote more for Putin \parencite{Goncharenko_2018, Levada_2021, Levada_2022, Levada_2023, greene2019putin, robertson2017putin}. Due to the peculiarities of data collection through exit polls, we do not have access to data on the level of education and economic status; in addition, there are no portraits of voters of other candidates in the literature (since all of them are relatively new faces in Russian politics and are participating in elections for the first time). Thus, we expect that women and older generations of migrants were more likely to vote for Putin. We also expect that people who trust the elections were more likely to vote for Putin, but in this case it is impossible to distinguish the direction of the effect between voting for the incumbent and trust in the electoral system.
+
+\textbf{H2:} \textit{Timing of migration as a proxy for average group-level political migration motives has a strong effect on voting choice.}
+
+In the history of Russia, there are many migration waves that have political motivation. Thus, the literature usually distinguishes the “4th wave of immigration” (after the collapse of the USSR and before Putin’s first term) \parencite{Snegov_2022}, a surge in immigration after the annexation of Crimea \parencite{Mereminskaya_2014} and the “fifth wave” - after the invasion of Russian troops into the territory of Ukraine. We expect that recent immigration (under 10 years), as a proxy indicator of disagreement with the policies of the Russian authorities, increases the likelihood of an opposition voting strategy.
+    
+\textbf{H3:} \textit{Country characteristics, reflecting the process of political re-socialization and political selection, influence the results of the elections of the President of the Russian Federation, aggregated at the country level.}
+
+In the context of this work, we cannot accurately differentiate the effects of political re-socialization from the effects of political selection due to the lack of specific data on migrants. We expect that in countries with ties to Russia (diplomatic, military or cultural) or with a non-negative foreign policy toward Russia, the percentage of voters for the incumbent on average will be higher.
+
+\section{Data}
+
+\subsection{Sample}
+
+We are working with two samples of data. First is the universe of voting stations and countries where voting abroad was possible, which usually means that a Russian embassy or consulate is operated in the city/country. \footnote{In some cases, an embassy or a consulate covers more than one country. When that happens we treat only the country where the physical voting station is located as being an observation. This is to avoid data duplication and dealing with differential travel times across borders.}  The second is the exit poll sample - consisting of 65 voting stations and 44 countries. \footnote{Although we use 42 countries for analysis due to bad exit poll codings - and less when there are data unavailabilities.}
+
+The exit poll was not conducted on a random sample of countries where voting abroad was possible. Rather, it being a voluntary initiative, it relied heavily on places where volunteers and organizational support was available. Moreover, as the initiative positions itself as pro-democratic and activist, the selection is also ideological. We assess the imbalance between the exit poll sample and the population of countries where voting abroad happened in \hyperref[tbl-t1]{Table 1}. \footnote{We select from our country-level covariates those that we feel represent country characteristics that might influence a decision to move to a particular country.}
+
+```{r}
+#| label: tbl-t1
+#| tbl-cap: Sample balance by whether Exit Poll was conducted or no
+
+datasummary_balance(~ ep, output = "kableExtra",
+                    data = data_table4, stars = T,
+                    dinm_statistic = "p.value") |> 
+  kable_styling(latex_options = c("scale_down"))
+```
+
+We also run a logistic regression model with the exit poll dummy as a dependent variable to assess multivariate balance. The results are available in \hyperref[fig-f2]{Figure 2}.
+
+```{r}
+#| fig-cap: Sample balance - logistic model
+#| label: fig-f2
+#| fig-width: 6
+#| fig-height: 4
+
+modelplot(m1.log, coef_map = c("vdem_polyarchy_2022" = "V-Dem Polyarchy",
+                               "log(mad_gdppc_2018)" = "Log GDPpc", "orthodox_share" = "% of Orthodox",
+                               "log(dist)" = "Log geodesic distance",
+                               "log(voters_in_list)" = "Log registered voters",
+                               "log(mean_trips)" = "Log departures to country"), 
+          draw = F) |> 
+  mutate(across(c(estimate, std.error, conf.low, conf.high), ~ exp(./10))) |> 
+  ggplot(aes(x = estimate, y = term)) +
+    geom_point() +
+    geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = .2) +
+    geom_vline(xintercept = 1, lty = 2) +
+    labs(x = "\nOdds ratios, 10% increase in variable",
+         y = NULL) +
+    theme_bw()
+```
+
+As can be seen from the coefficients, democracy is the most striking difference between the two samples. For a 10-point (out of 100) increase in the V-Dem Polyarchy index, the odds of conducting an exit poll on average increase by $131\%$ (all other variables held equal). As we have also predicted, the exit poll oversamples countries where more Russians already reside. For a $10\%$ increase in the number of already registered voters (a rough baseline for the size of the diaspora), the odds of conducting an exit poll on average increase by a moderate but significant $22\%$ percent (all other variables held equal).
+
+\subsection{Sources}
+
+\subsubsection{Election and exit poll data}
+
+For our dependent variables we use two sources of election outcomes. First comes from the official results of 2024 Presidential Election. We use a dataset parsed by Ivan Shukshin, an election analyst \parencite{central_election_committee_of_russian_federation_results_2024}. \footnote{As far as we can tell, only information for the Istanbul voting station in our sample was lost during parsing. The author confirmed that such errors are possible. We recovered the data manually - the corresponding modification is in the ``data\_building.R`` file.} We also have exit poll voting shares aggregated to the voting station level and raw exit poll questionnaires with socio-demographic characteristics of respondents as provided by the initiative that conducted the exit polls \parencite{vote_abroad_initiative_exit_2024, vote_abroad_initiative_exit_2024-1}. 
+
+Exit poll raw data includes demographic and political questions asked to all respondents. Their descriptive statistics are available in \hy[e. We recode these variables to make more sense conceptually \footnote{Specific coding decisions are described at length in the ``variables\_descriptive.qmd`` file.} - in the "time to voting" station we create two variables: "less than an hour" and "more than 4 hours" to capture the time spent on getting to the voting station without misinterpreting country-specific travel distances. We also create a binary variable for trust in the election results (as opposed to 4-level definitely/probably yes/no coding) to have a more focused measure.
+
+\subsubsection{Country-level covariates}
+
+The data on religion composition for the \textit{"Orthodox share" variable} comes from the World Religion Dataset \parencite{maoz_world_2013}. 
+
+We use \textit{democracy measures} from V-DEM (2022\footnote{Different variables have different last observations dates. We opt to use the latest for each with the idea that they are capturing essentially the same country characteristics. In this case if two codings of democracy or GDP do not agree the difference can be attributed to i) different coding itself or ii) different time of measurement. If such issues occur we will deal with them separately.}) and Boix, Miller and Rosato (2020) acquired via the Quality of Governance time-series dataset \parencite{coppedge_v-dem_2024,coppedge_v-dem_2024-1,teorell_quality_2024,boix_boix-miller-rosato_2018}. 
+
+Two codings of \textit{GDP per capita} from the Madisson project (2018) and World Development Indicators (2022) are also taken from the QOG time-series dataset \parencite{bolt_maddison_2020, wdi1, teorell_quality_2024}. 
+
+We encode a categorical variable using the Alliance Treaty Obligations and Provisions dataset (\cite{atop1}\footnote{The cited paper says that the ATOP codes data up to 1944 - however we are using the 5.1 version of the data, where data is up to 2018 and there is no alternative citation for the data.} indicating the number of different types of military agreements signed between Russia and the country (for 2018). \footnote{Specifically we use the non-directed dyadic dataset and select Russia as one of the partners} The types of agreements (in order of increasing commitment) are \footnote{There is another type of obligation, namely offense - promise to provide active military support under any conditions not precipitated by attack on the sovereignty or territorial integrity of an ally, regardless of whether the goals of the action are to maintain the status quo. However, no countries signed such a treaty with Russia (2018)}:
+
+\begin{itemize}
+    \item Non-aggression - promise not to use force to settle disputes
+    \item Consultations - promise to consult with an ally in the event of crises with the potential to become militarized conflicts  
+    \item Neutrality - promise not to join a conflict between the ally and a third party on the side of the ally’s adversary
+    \item Defense - promise to provide active military support in the event of attack on the sovereignty or territorial integrity of the ally
+\end{itemize}
+
+Therefore by summing them and treating the result as a categorical variable we get 5 possibly relationships with Russia ranging from not having signed any treaties to widespread military cooperation.
+
+Data on exports and imports in and out of Russia come from the World Integrated Trade Solution dataset developed by the World Bank and the UN \parencite{wits_world_2024}. Specifically we use share of all exports or imports with the country. 
+
+We define geodesic distance between Russia and each country using CEPII's GeoDist database. The distance between countries is measured not between centroids (which in case of Russia would be especially erroneous, as the geographical center lies in the Urals) but is weighted by city populations \parencite{geodist2011}. 
+
+For our design, having a variable that quantifies how common it is to move to the country from Russia is vital - countries where a lot of Russians have lived before are likely to react to migration waves differently (and migration waves could depend on the size of the diaspora). However, there are not many suitable options for such a measure. We have experimented with the International Migrant Stock and Bilateral migration datasets, but they contain too many missing values in countries in Africa and Latin America \parencite{abel_bilateral_2022, un_population_division_international_2020}. Given these issues we are forced to use border crossings data from the FSS (Federal Security Service) \parencite{fss_2024}. It quantifies answers to the question of where Russians are headed during them crossing any type of Russian national border. This variable has potential issues if people obscure where they are going (clearly visible after February 24, 2022) or if there are distortions on the FSS side. To try and minimize bias we average across the period 2010-2022 (excluding only 2023 and 2024) and use the mean as our variable. 
+
+Since some variables are not readily available or come from secondary sources we code them by hand. Those include locations of military bases and the status of the country as perceived by the Russian Foreign Ministry. A variable reflecting the \textit{location of Russian military bases} on the territory of a foreign state was created as follows:
+
+\begin{itemize}
+    \item Based on three sources \parencite{rogozinska2020russian, GeorgianFoundation_2022, WikipediaBases_2024}, three additional dummy variables were created, coded 1 if the source mentions a military base on the territory of state i. Since information differs between sources, we consider that there is a military base of the Russian armed forces on the territory of state i if at least 2 sources identify this base.
+    \item In addition to the state armed forces, private military companies (for example, Wagner PMC) play an important role. Since they are not required to disclose information about their activities, we can rely only on media information - if one of the sources \parencite{Molfar_2023, WikipediaWagner_2024} indicates that a Russian PMC is operating in the territory of country i - we code the dummy as 1.
+    \item Thus, the resulting military base variable can have 2 values: 1 - if at least 2 sources talk about the existence of a Russian military base on the territory of country i and/or there is information about the activities of a Russian PMC in this country and 0 if otherwise.
+\end{itemize}
+
+\textit{The friendliness status of states} was coded as follows:
+\begin{itemize}
+    \item 0 - “unfriendly” state: included in the list of unfriendly states in accordance with the Order of the Government of the Russian Federation dated 03/05/2022 N 430-r (as amended on 10/29/2022) “On approval of the list of foreign states and territories committing unfriendly actions towards the Russian Federation , Russian legal entities and individuals",
+    \item 1 - “neutral” state - countries whose foreign policy is not directed either against Russia or towards rapprochement with it (according to the Russian Foreign Ministry).
+    \item 2 - “friendly” state.
+\end{itemize}
+
+We also added a dummy variable \textit{help}, which reflects assistance to Ukraine during the conflict. The variable is equal to 1 if the country i provided military, material or humanitarian assistance to Ukraine and 0 otherwise. The main source of data was the project "Ukraine Support Tracker" \parencite{Bomprezzi_2024, WikipediaAid_2024}.
+
+Descriptive statistics for country-level variables are available in the Appendix, REF. Correlations and pairwise distributions are available in \hyperref[fig-f3]{Figure 3}.
+
+```{r}
+#| fig-cap: Pairwise country-level variables distributions
+#| label: fig-f3
+#| fig-width: 12
+#| fig-height: 14
+
+ggpairs(data_figure2, mapping = aes(color = `Conducted Exit Poll`), 
+        columns = 1:10,
+        legend = c(2, 2)) +
+    scale_color_manual(values = c("#bf212f", "#1984c5")) + 
+    scale_fill_manual(values = c("#bf212f", "#1984c5")) + 
+    theme_minimal() + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1),
+          legend.position = "bottom")
+```
+
+\subsection{Missing Data}
+
+The data on exit polls consists of voluntarily answering respondents, which means that they could opt out of answering any or some questions. The missing data as can be seen from @tbl-at3 amounts to at most to $20\%$ of observations. Two main reasons for those patterns are self-censoring due to the perceived goals and allegiances of the exit poll. We believe that voters in countries close to Russia politically or geographically might fear the monitoring capabilities of the Russian state and conduct themselves as voters inside of Russia do - that is, conceal opposition preferences. On the other hand in (mostly democratic and affluent European countries) places where the voting process was accompanied by opposition demonstrations, incumbent supporters might conceal their preferences. \footnote{We discuss potential missigness mechanisms at length in the ``imputation.qmd`` notebook.} 
+
+Our verdict regarding the missing data is that it is missing at random (MAR) - that is, missingness is dependent on values of observed covariates. The "Declined to answer" on the vote choice is the largest offender - when this category is removed, the data is missing (almost) completely at random.
+
+With that in mind we proceed with multiple imputation as our preferred method of dealing with missing data. However, imputation results show that we fail to recover any meaningful quantities of imputed variables as illustrated in \hyperref[fig-f4]{Figure 4}. This is due to the fact that the missigness is extremely correlated with missingness in all other variables - which means that a person declining to answer any one of the questions (more so in the political questions) is likely to decline to answer all of them. As we don't have enough variables to select those that do not behave problematically, we abandon imputation strategies for individual-level variables and proceed with complete-case analysis. In the MAR case this option is just as valid.
+
+```{r}
+#| fig-cap: Imputation results - number of missing values before and after
+#| label: fig-f4
+
+ggplot(data_figure3, aes(x = value, y = rowname, fill = rowname)) +
+    geom_bar(stat = "identity", width = 0.5) +
+    facet_wrap(~ name, scales = "free_x", ncol = 2) +
+    scale_fill_manual(values = c("#1984c5", "#bf212f")) +
+    labs(y = NULL, x = "\nNumber of missing values") +
+    theme_minimal() +
+    theme(legend.position = "none")
+```
+
+We choose not to impute any values for the country-level variables as assigning democracy or GDP values to countries where they are missing could be very problematic and should be done in the presence of sufficient truth data. The missing data matrix is available in \hyperref[fig-f1a]{Figure}.
+
+\section{Empirical strategy}
+
+\subsection{Individual-level nested logit}
+
+For this we fit multiple models using vote choice variables available from the exit poll. There are three model types: dichotomized-outcomes logistic regression, multinomial logistic regression and nested logits. Here we focus on nested logit regressions as our preffered mode of analysis. 
+
+The logic of the dichotomies is as follows:
+
+\begin{itemize}
+    \item When approached with an exit poll request, the voter first decides whether to answer the question. Therefore, irrespective of the vote choice, the first dichotomy is \textit{decline to answer vs answer}. \footnote{Here and throughout the first option in the dichotomy is defined as "1" in the model.} 
+    \begin{itemize}
+        \item If the respondent decided to answer, we treat their responses as faithful, that is, we believe further nests reflect their decision process at the poll, rather than when questioned.
+    \end{itemize}
+    \item In many ways, decision to vote for the incumbent is the most ideologically salient and divisive one. Therefore, the voter first chooses whether she supports Putin or not, making it a second dichotomy.
+    \item If a voter doesn't vote for Putin, she is then left with a choice of systemic votes (Slutsky from the Liberal Democratic party or Haritonov from the Communist party) or non-systemic opposition strategies (Davankov or spoil the ballot).
+    \item Once decided, these two nests are completely separated, and inside one of them the voter makes the final choice, which is reported in the exit poll. \footnote{See ``variables\_descriptives.qmd`` and ``models.qmd`` for complete discussion of voting choices.}
+\end{itemize}
+
+The model is thus of the following form:
+
+\begin{equation}
+\label{e1}
+\begin{aligned}
+    \log\left[\frac{P(\operatorname{Y_d} = \operatorname{1} ) }{ 1 - P( \operatorname{Y_d} = \operatorname{1})} \right] = 
+    \alpha_{ic} + \beta_{1-2}(\operatorname{Gender}_{ic}) + \beta_{3-5}(\operatorname{Age}_{ic})\\ 
+                + \beta_{6}(\operatorname{Local_{ic}}) + \beta_{7-10}(\operatorname{Time_{ic}})\\
+                + \beta_{11-12}(\operatorname{Trust_{ic}}) + \gamma\mathbf{X_c} + \epsilon_{ic}
+\end{aligned}
+\end{equation}
+
+\hyperref[e1]{Equation 1} represents our simplest nested logit. For each outcome $Y$ of dichotomy $d \in D$ the log odds are given by the linear combination of our categorical predictors with coefficients $\beta_{1-12}$ and the error term $\epsilon_{ic}$. All predictors vary by individual $i$ and country $c$. $\mathbf{X_c}$ is a vector of country fixed effects.
+
+\subsection{Country-level linear models}
+
+We use linear models to predict country-level aggregated vote shares. The model is of the following form:
+
+\begin{equation}
+\label{e2}
+\begin{aligned}
+    y_{rc} = \alpha_{c} + \beta_{1}(\operatorname{Orthodox}_{c}) + \beta_2(\operatorname{Democracy_{c}}) + \beta_{3}(\operatorname{GDPpc_{c}}) + \beta_{4-7}(\operatorname{Treaties_{c}}) \\
+                        + \beta_{8}(\operatorname{Exports_{c}}) + \beta_{19}(\operatorname{Imports_{c}}) + \beta_{10-11}(\operatorname{Friendliness_{c}}) + \beta_{12}(\operatorname{UkraineHelp_{c}})\\
+                        + \beta_{13}(\operatorname{MilitaryPresence_{c}}) + \beta_{14}(\operatorname{Distance_{ic}}) + \epsilon_{c}
+\end{aligned}
+\end{equation}
+
+\subsection{Mixed effects nested logit}
+
+We then extend the model in \hyperref[e1]{Equation 1} to include country-level predictors. The resulting model is described by equation:
+
+\begin{equation}
+\label{e3}
+\begin{aligned}
+    \log\left[\frac{P(\operatorname{Y_{dme}} = \operatorname{1} ) }{ 1 - P( \operatorname{Y_{dme}} = \operatorname{1})} \right] = 
+    \alpha_{ic} + \beta_{1-12}\mathbf{I_{ic}} + \beta_{13-26}\mathbf{C_{c}} + \gamma\mathbf{X_c} + \epsilon_{ic}
+\end{aligned}
+\end{equation}
+
+where $\mathbf{I_{ic}}$ is the vector of individual-level covariates from \hyperref[e1]{Equation 1} and $\mathbf{C_{c}}$ is a vector of country-level covariates defined in AGG MODEL LINK. Note that $dme \in D_{me} \in D$. This is because we do not evaluate a dichotomy Haritonov/Slutsky due to it not having enough observations and any substantive interest. Moreover, we report dichotomy Non-systemic/systemic opposition with reduced number of country-level covariates due to it being a singular fir otherwise. 
+
+\section{Results}
+
+\subsection{Individual-level determinants}
+
+We start with the results of the individual-level only nested logits. I present results by-dichotomy starting with the highest one - answering the exit poll or not. Our interpretation of missingness pattern implies that we need to be especially careful when interpreting that one, as it is likely to be the most biased by non-response. Here we showcase the most important conclusions from each model - the regression table is included in the \hyperref[tbl-t4a]{Appendix Table 4}.
+
+```{r}
+#| fig-cap: Simulated probabilities to decline to answer the exit poll
+#| label: fig-f5
+
+fenl1 <- plot_predictions(models(m3.nested.fe, 1), condition = c("sex", "age_bin")) +
+  labs(x = NULL, y = "Probability to not answer the exit poll\n",
+       color = "Age group") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430")) +
+  theme_bw() + 
+  theme(legend.justification = "left")
+
+fenl2 <- plot_predictions(models(m3.nested.fe, 1), 
+                 condition = c("out_of_Russia_time", 
+                               "result_trust_bin")) +
+  labs(x = NULL, y = "Probability to not answer the exit poll\n",
+       color = "Do you trust the\noutcome of the election?") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c","#016430")) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+fenl1 /fenl2 + plot_layout(axis_titles = "collect")
+```
+
+From \hyperref[fig - f5]{Figure 5} we can observe that the probabilities to decline answering the exit poll are slightly higher among women and older age groups. The probability to decline is also higher among those who do not trust the election results even though they do not differ much for people living out of the country for different times. Those results offer preliminary evidence as to the similarity of the voter portrait for incumbent supporters and those declining to answer the poll. Those who answered "Don't know" to the trust question were more likely to decline to answer the poll as well. 
+
+
+```{r}
+#| fig-cap: Simulated probabilities to vote for Putin
+#| label: fig-f6
+
+plot_predictions(models(m3.nested.fe, 2), condition = c("sex", "age_bin",
+                                                         "out_of_Russia_time")) +
+  facet_wrap(~ out_of_Russia_time, scales = "fixed") +
+  labs(x = NULL, y = "Probability to vote for Putin\n",
+       color = "Age group") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430")) +
+  theme_bw()
+```
+With regards of incumbent voting we see the expected results with regards to the demographic variables and Hypothesis I. Voters in age group 45-65 and 65 + and women are significantly more likely to cast their vote for the incumbent, which qualitatively replicates behavior of these groups in Russia. There also significant differences between times of emigration - those who left before 2014 are much more likely to vote for Putin compared to any other category. The effect of age for the group of people who left after the start of full-scale invasion - for them demographic variables vary very little - and they are the least likely group to cast a vote for the incumbent. Trust in the result of the election remains the variables that explains the most of the data - but its effect doesn't differ by any other variable. 
+
+```{r}
+#| fig-cap: Simulated probabilities to support non-systemic opposition
+#| label: fig-f7
+
+plot_predictions(models(m3.nested.fe, 3), condition = c("result_trust_bin",
+                                                        "age_bin")) +
+  labs(x = NULL, y = "Probability to support non-systemic opposition\n",
+       color = "Age group") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430")) +
+  theme_bw()
+```
+
+To be sure, when talking about the systemic vs non-systemic opposition choice, the former is clearly outnumbered - both candidates got around $6\%$ in total. This is due to non-existent campaign and their public support for Putin. Therefore we can only see some differences in voting between age groups. Older voters, regardless of their trust in the election results, are more likely to vote for the systemic opposition - especially those after 65 years old. This may be due to broader experience with those political parties or skepticism towards predominantly "young" opposition movements.
+
+Lastly, we look at non-systemic opposition strategies. "0" is coded as voting for Davankov and "1" as spoiling the ballot. The results are presented in \hyperref[fig-f8]{Figure 8}. As discussed in the notebooks, those were two main strategies - in absence of valid opposition candidates, opposition leaders either endorsed Davankov, a younger candidate from an emerging party\footnote{That is not to say its program was any different from Putin, communists or Slutsky}, or spoiled the ballot. The latter could be construed as being less civic and more drastic action. 
+
+```{r}
+#| fig-cap: Simulated probabilities to spoil the ballot
+#| label: fig-f8
+
+plot_predictions(models(m3.nested.fe, 4), condition = c("result_trust_bin", 
+                                                        "age_bin",
+                                                        "out_of_Russia_time")) +
+  labs(x = NULL, y = "Probability to spoil the ballot\n",
+       color = "Age group") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430")) +
+  theme_bw()
+```
+The results again dichotomize by age - people aged 18-44 were much more likely to spoil the ballot. Paradoxically, those who do not believe in election results were the least likely to spoil the ballot vs voting for Davankov. On the other hand, those who were not sure about the legitimacy of the election spoil the ballot because the action itself involve marking multiple candidates - it could be that this group is genuinely unsure about the choice.
+
+\subsection{Country-level linear models}
+
+Based on the results of linear models for vote shares presented in \hyperref[tbl-t2]{Table 2}, the following conclusions can be drawn:
+
+:::: {layout="[0.5, 0.5]"}
+
+:::{#firstcol}
+
+```{r}
+#| results: asis
+
+resizebox.stargazer(m2p, m2d, m2s, label = "t2", header = F, 
+                    title = "Linear models for vote shares",
+                    covariate.labels = c(
+                        "Share of Orthodox cristians", "V-Dem Polyarchy",
+                        "Log GDP per capita", "Treaties signed: 1 (ref 0)",
+                        "Treaties signed: 2 (ref 0)", "Treaties signed: 3 (ref 0)",
+                        "Treaties signed: 4 (ref 0)", "Share of export to country", 
+                        "Share of import from country", "Friendliness status: Unfriendly",
+                        "Friendliness status: Friendly",
+                        "Ukraine help", "Russian military base or PMC in country",
+                        "Log geodesic distance", "Log departures to country", 
+                        "Intercept"),
+                    tab.height = "\\textheight", tab.width= "\\textwidth")
+```
+
+\begin{itemize}
+    \item In fact, in countries culturally close to Russia in terms of religion, immigrants are more likely to vote for Putin and less likely to choose one of the opposition voting strategies.
+    \item The results confirm the words of the head of the Russian Central Election Commission: in unfriendly countries, voters more often chose to spoil the ballot rather than vote for Davankov.
+\end{itemize}
+
+:::
+
+:::{#secondcol}
+\begin{itemize}
+   \item The political and economic context of countries has a greater influence on the voting results: in richer countries, voters are more likely to choose one of the opposition strategies rather than vote for Putin. The same effect is observed for more democratic countries. This result is simultaneously an indicator of political re-socialization and political selection; in this case, we cannot differentiate between them.
+    \item An interesting effect is observed for countries that import from Russia - voters living there are less likely to vote for Putin. This effect reflects the continued dependence of European and Western countries on Russian oil and gas supplies, despite sanctions.
+    \item Russian military bases and aid to Ukraine do not have an effect on election results, which may be due to the fact that these variables are associated with the level of economic development and the level of democracy.
+     \item Mean departures to the country from Russia is insignificant, meaning that immigrants going to more or less common foreign countries have no differential voting attitudes. This may also be to the fact that more common countries to go to from Russia are more economically prosperous and democratic, or could have something to do with the measure itself.
+\end{itemize}
+:::
+
+::::
+
+Thus, the third hypothesis is confirmed: country characteristics, reflecting the process of political re-socialization and political selection, influence the results of the elections of the President of the Russian Federation, aggregated at the country level.
+
+\subsection{Mixed effects models}
+
+We now add country-level predictors to our individual-level models. Overall, their inclusion doesn't invalidate any of the conclusions drawn before. Below I illustrate selected results. The full regression table is available in the \hyperref[tbl-t5a]{Appendix Table 5}.
+
+```{r}
+#| fig-cap: Probabilities to answer the exit poll by export-import and trust in result
+
+menl1 <- plot_predictions(m5a.nested, condition = c("export_share", "result_trust_bin"),
+                          re.form=NA) +
+  labs(x = NULL, y = "Probability to not answer the exit poll\n",
+       color = "Trust in result",
+       fill = "Trust in result",
+       title = "Export Share") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c")) +
+  scale_fill_manual(values = c("#1984c5", "#bf212f", "#f5be2c")) +
+  theme_bw() + 
+  theme(legend.justification = "left")
+
+menl2 <- plot_predictions(m5a.nested, condition = c("import_share", "result_trust_bin"),
+                          re.form=NA) +
+  labs(x = NULL, y = "Probability to not answer the exit poll\n",
+       color = "Trust in result",
+       fill = "Trust in result",
+       title = "Import Share") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c")) +
+  scale_fill_manual(values = c("#1984c5", "#bf212f", "#f5be2c")) +
+  theme_bw() + 
+  theme(legend.justification = "left")
+
+menl1/menl2 + plot_layout(axis_titles = "collect", guides = "collect")
+```
+
+For the survey non-response dichotomy we examine effect of export, import and their distribution by trust in the result of the election. For those that trust in the result or are unsure, the probability to decline to answer the poll is higher in countries with lower export share from Russia and higher imports to Russia. The difference is lower This is to be expected, but the effect persists even when controlling for democracy and economic development of those countries.
+
+```{r}
+#| fig-cap: Probabilities to vote for Putin
+#| label: fig-f9
+
+menl3 <- plot_predictions(m5p.nested, condition = c("military_dummy", "out_of_Russia_time"),
+                          re.form=NA) +
+  labs(x = NULL, y = "Probability to vote for Putin\n",
+       title = "Military base dummy",
+       color = "Time out of Russia",
+       fill = "Time out of Russia") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430", "grey")) +
+  scale_fill_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430", "grey")) +
+  theme_bw() + 
+  theme(legend.justification = "left")
+
+menl4 <- plot_predictions(m5p.nested, condition = c("orthodox_share", "out_of_Russia_time", "age_bin"),
+                          re.form=NA) +
+  facet_wrap(~ age_bin, scales = "fixed") +
+  labs(x = NULL, y = "Probability to vote for Putin\n",
+       title = "Share of Orthodox Christians",
+       color = "Time out of Russia",
+       fill = "Time out of Russia") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430", "grey")) +
+  scale_fill_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430", "grey")) +
+  theme_bw() + 
+  theme(legend.justification = "left")
+
+menl3/menl4 + plot_layout(axis_titles = "collect", guides = "collect")
+```
+
+For those who emigrated before 2014, having Russian military or PMC presence in the country significantly reduces the probability to vote for Putin. We hypothesize that this effect can be attributed to pure resocialization, as emigrants adopt local attitudes towards the Russian military. On the other hand, it is doubtful that many people with opposition views would move to places with high Russian military presence. \footnote{It would be problematic if distance to Russia would dictate both, however, we verify graphically that that is not the case.} We also investigate the effects of having closer religious ties to the country of emigration. It appears that higher share of Orthodox Christians matters more for early emigrants. This effect is almost entirely driven by age - meaning that older voters move to countries with higher share of Orthodox Christians and are then more likely to vote for Putin. 
+
+```{r}
+#| fig-cap: Probabilities to choose non-systemic opposition
+#| label: fig-f10
+
+plot_predictions(m5s.nested, condition = c("dist", "out_of_Russia_time", "result_trust_bin"),
+                          re.form=NA) +
+  facet_wrap(~ result_trust_bin, scales = "fixed") +
+  labs(x = NULL, y = "Probability to choose non-systemic opposition\n",
+       title = "Geodesic distance to Russia",
+       color = "Time out of Russia",
+       fill = "Time out of Russia") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430", "grey")) +
+  scale_fill_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430", "grey")) +
+  theme_bw() + 
+  theme(legend.justification = "left",
+        legend.position = "bottom")
+```
+
+The distance to Russia appears to have a somewhat non-linear relationship with the probability to vote for non-systemic opposition. The effect is more pronounced for those who left Russia later and differs by the baseline trust in the result.
+
+Lastly, we investigate opposition strategies.
+
+```{r}
+#| fig-cap: Probabilities to spoil the ballot
+#| label: fig-f11
+
+plot_predictions(m5d.nested, condition = c("vdem_polyarchy_2022", 
+                                           "out_of_Russia_time", 
+                                           "result_trust_bin"),
+                          re.form=NA) +
+  facet_wrap(~ result_trust_bin, scales = "fixed") +
+  labs(x = NULL, y = "Probability to spoil the ballot\n",
+       title = "Geodesic distance to Russia",
+       color = "Time out of Russia",
+       fill = "Time out of Russia") +
+  scale_color_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430", "grey")) +
+  scale_fill_manual(values = c("#1984c5", "#bf212f", "#f5be2c", "#016430", "grey")) +
+  theme_bw() + 
+  theme(legend.justification = "left",
+        legend.position = "bottom")
+```
+
+The only country-level variable that produces a significant effect is the democracy score. Higher democracy scores are associated with lower probability to spoil the ballot. This is in line with the idea that in more democratic countries, civic culture might preclude voters to go for more drastic actions. The effect is more pronounced for those who do not trust the result of the election.
+
+\section{Conclusion}
+
+\printbibliography
+
+\newpage
+\section{Appendix}
+
+\subsection{Descriptive statistics}
+
+```{r}
+#| tbl-cap: Descriptive statistics of categorical country-level variables
+#| label: tbl-t1a
+datasummary_skim(data_table2, title = "Descriptive statistics of categorical country-level variables",
+                 output = "kableExtra", type = "categorical") |> 
+  kable_styling(latex_options = c("scale_down", "hold_position"))
+```
+
+```{r}
+#| tbl-cap: Descriptive statistics of numeric country-level variables
+#| label: tbl-t2a
+datasummary_skim(data_table2, title = "Descriptive statistics of numeric country-level variables",
+                 output = "kableExtra", type = "numeric") |>
+  kable_styling(latex_options = c("scale_down", "hold_position"))
+```
+
+\newpage
+```{r}
+#| tbl-cap: Descriptive statistics of individual-level variables
+#| label: tbl-t3a
+datasummary_skim(data_table1, title = "Descriptive statistics of individual-level variables",
+                 output = "kableExtra", type = "categorical") |> 
+  kable_styling(latex_options = c("scale_down", "hold_position"))
+```
+
+\subsection{Missing data}
+
+```{r}
+#| fig-cap: Missing data patterns for all country-level variables
+#| label: fig-f1a
+missing_pairs(data_figure4, dependent = "bmr_dem_2020",
+                explanatory = c("obl_type", "friendly_status", "help", 
+                                "military_dummy", "orthodox_share", 
+                                "vdem_polyarchy_2022", "mad_gdppc_2018", 
+                                "wdi_gdpcapcon2015_2022", "export_share",
+                                "import_share", "dist", "mean_trips")) +
+    labs(title = "") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1),
+          strip.text.y = element_text(angle = 0))
+```
+
+
+```{r}
+#| label: Results of individual-level nested logits
+#| results: asis
+
+resizebox.stargazer(models(m3.nested.fe), header = F,
+                    title = "Results of individual-level nested logits",
+                    label = "t4a",
+          dep.var.labels = c("Don't answer vs answer", "Putin vs everyone", 
+                             "Non-systemic vs systemic opposition",
+                             "Spoiled vs Davankov", "Slutsky vs Haritonov"),
+          covariate.labels = c(
+            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
+            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
+            "Took < 1 hour to get to the voting station",
+            "Moved after March 2022 (ref before 2014)", 
+            "Moved after March 2019 but before March 2022 (ref before 2014)",
+            "Moved after March 2014 but before March 2019 (ref before 2014)",
+            "Didn't move - tourist, lives in Russia (ref before 2014)",
+            "Trust in the result: Don't know (ref Yes)",
+            "Trust in the result: No (ref Yes)", "Intercept"),
+          omit = "as.factor", 
+          tab.height = "\\textheight", tab.width= "\\textwidth"
+          )
+```
+
+\newpage
+
+```{r}
+#| label: Results of mixed-effects nested logits
+#| results: asis
+
+resizebox.stargazer(m5a.nested, m5p.nested, m5s.red, m5d.nested, 
+          header = F,
+          title = "Results of mixed-effects nested logits",
+          omit = "as.factor", label = "t5a",
+          dep.var.labels = c("Declined to answer vs answer", 
+                             "Putin vs everyone else", 
+                             "Non-systemic vs systemic opposition",
+                             "Spoiled vs Davankov"
+                             ),
+          covariate.labels = c(
+            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
+            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
+            "Took < 1 hour to get to the voting station",
+            "Moved after March 2022 (ref before 2014)", 
+            "Moved after March 2019 but before March 2022 (ref before 2014)",
+            "Moved after March 2014 but before March 2019 (ref before 2014)",
+            "Didn't move - tourist, lives in Russia (ref before 2014)",
+            "Trust in the result: Don't know (ref Yes)",
+            "Trust in the result: No (ref Yes)", 
+            "Share of Orthodox cristians", "V-Dem Polyarchy",
+            "Log GDP per capita", "Treaties signed: 1 (ref 0)",
+            "Treaties signed: 2 (ref 0)", "Treaties signed: 3 (ref 0)",
+            "Treaties signed: 4 (ref 0)", "Share of export to country", 
+            "Share of import from country", "Friendliness status: Unfriendly",
+            "Friendliness status: Friendly",
+            "Ukraine help", "Russian military base or PMC in country",
+            "Log geodesic distance",
+            "Intercept"),
+          tab.height = "\\textheight", tab.width= "\\textwidth")
+```
+

@@ -1,0 +1,212 @@
+---
+title: "Vizualizations"
+author: "Polikanov Stepan"
+project:
+     execute-dir: project
+format:
+  pdf:
+    code_download: true
+    fontsize: 11pt
+    highlight-style: kate
+    fig-width: 10
+    fig-height: 6
+    include-in-header:
+      - text: |
+          \addtokomafont{disposition}{\rmfamily} 
+          \AddToHook{env/Highlighting/begin}{\scriptsize} 
+          \usepackage{float} 
+embed-resources: true
+execute: 
+  echo: true
+  warning: false
+  error: false
+  message: false
+---
+
+```{r}
+#| label: setup
+
+# Manage packages
+
+  ## Package list
+  packages <- c("readxl", "tidyverse", "lubridate")
+  
+  ## Install packages not yet installed
+  installed_packages <- packages %in% rownames(installed.packages())
+  if (any(installed_packages == FALSE)) {
+    install.packages(packages[!installed_packages])
+  }
+  
+  ## Load packages
+  invisible(lapply(packages, library, character.only = TRUE))
+  
+  
+  # Set options
+options(scipen = 999)
+
+# Define global functions
+
+  ## Fitting stargazer onto the page
+  resizebox.stargazer = function(..., tab.width = "!", tab.height = "!")
+      {
+    require(stringr) 
+    res = capture.output(stargazer::stargazer(...))
+    tab.width = tab.width
+    tab.height = tab.height
+    res = prepend(res, "}", before = length(res))
+  
+    res = c(res[1:str_which(res, "^\\\\begin\\{tabular\\}.*")-1],
+        paste0("\\resizebox*{",tab.width,"}{",tab.height,"}{%"),
+        res[str_which(res, "^\\\\begin\\{tabular\\}.*"):length(res)]
+        )
+    cat(res, sep = "\n")
+  }
+```
+
+```{r}
+#| label: source data building code
+library(here)
+source(here("scripts", "data_building.R"))
+```
+
+```{r}
+#| label: prep world vizualisations
+
+world <- ne_countries(scale = "medium", returnclass = "sf") |> 
+  mutate(countrycode_c = countrycode(as.numeric(iso_n3_eh), origin = "iso3n",
+                                     destination = "iso3c"))
+
+merged_world <- merged |>
+  mutate(putin_full = if_else(countrycode_c == "TUR", putin_cec, putin_full),
+         davankov_full = if_else(countrycode_c == "TUR", davankov_cec, davankov_full),
+         spoiled_full = if_else(countrycode_c == "TUR", spoiled_cec, spoiled_full)) |> 
+  group_by(countryname_en, countryname_ru, countrycode_c, countrycode_n) |> 
+  filter(!countryname_ru %in% c("Абхазия", "Южная Осетия")) |> 
+  summarise(putin_full = mean(putin_full),
+            davankov_full = mean(davankov_full),
+            spoiled_full = mean(spoiled_full)) |> 
+  mutate(result = case_when(putin_full > 0.5 ~ "Putin",
+                            davankov_full > 0.5 ~ "Davankov",
+                            davankov_full <= 0.5 & putin_full <= 0.5 ~ "Second Round",
+                            .default = "Oops"),
+         result2 = case_when((davankov_full + spoiled_full) > putin_full
+                             ~ "Davankov + Spoiled",
+                             putin_full > (davankov_full + spoiled_full) ~ "Putin",
+                             putin_full == (davankov_full + spoiled_full) ~ "Tie",
+                             .default = "Oops"),
+         result3 = case_when(davankov_full > putin_full
+                             ~ "Davankov",
+                             putin_full > davankov_full ~ "Putin",
+                             putin_full == davankov_full ~ "Tie",
+                             .default = "Oops")) |> 
+  full_join(world, by = "countrycode_c") |>
+  st_as_sf()
+
+putin_quant = classIntervals(c(min(merged_world$putin_full) - .00001,
+                               merged_world$putin_full), n = 9, style = "quantile")
+
+davankov_quant = classIntervals(c(min(merged_world$davankov_full) - .00001,
+                               merged_world$davankov_full), n = 4, style = "quantile")
+
+spoiled_quant = classIntervals(c(min(merged_world$spoiled_full) - .00001,
+                               merged_world$spoiled_full), n = 4, style = "quantile")
+```
+
+```{r}
+#| label: results vizualization
+ggplot(merged_world, aes(fill = result)) +
+  geom_sf(alpha = 0.8) +
+  scale_fill_manual(
+    labels = c(paste0("Davankov,\n", 
+                     sum(merged_world$result == "Davankov", na.rm = T),
+                     " countries"), 
+               paste0("Putin,\n", 
+                      sum(merged_world$result == "Putin", na.rm = T),
+                      " countries"), 
+               paste0("Second Round,\n", 
+                      sum(merged_world$result == "Second Round", na.rm = T),
+                      " countries")),
+                    values = c("#9BCF53", "#bf212f", "#264b96"), 
+                    na.translate = F, na.value = "lightgrey") +
+  labs(title = "Results of 2024 Russian Presidental election abroad",
+       subtitle = "Average share of votes by country, first round outcome of election",
+       fill = "Who wins in a country?",
+       caption = "\nSources: Ivan Shukshin's Telegram channel - t.me/nevybory,\nCentral Election Commission of the Russian Federation\n\nNote: Abkhazia and South Osetia not shown") +
+  theme_void() +
+  theme(legend.position = "bottom") +
+  coord_sf(ylim = c(-55, 90))
+
+ggplot(merged_world, aes(fill = result3)) +
+  geom_sf(alpha = 1) +
+  scale_fill_manual(labels = c(paste0("Davankov,\n", 
+                                      sum(merged_world$result3 == "Davankov",
+                                          na.rm = T),
+                                      " countries"), 
+                               paste0("Putin,\n", 
+                                      sum(merged_world$result3 == "Putin", na.rm = T),
+                                      " countries"),
+                               "Tie,\n Uruguay"),
+                    values = c("#9BCF53", "#bf212f", "#FFD23F"), 
+                    na.translate = F, na.value = "lightgrey") +
+  labs(title = "Results of 2024 Russian Presidental election abroad",
+       subtitle = "Average percent of votes by country, which candidate has more",
+       fill = "Who has more votes?",
+       caption = "\nSources: Ivan Shukshin's Telegram channel - t.me/nevybory,\nCentral Election Commission of the Russian Federation\n\nNote: Abkhazia and South Osetia not shown") +
+  theme_void()+
+  theme(legend.position = "bottom") +
+  coord_sf(ylim = c(-55, 90))
+
+ggplot(merged_world, aes(fill = result2)) +
+  geom_sf(alpha = 1) +
+  scale_fill_manual(labels = c(paste0("Davankov + Spoiled,\n", 
+                                      sum(merged_world$result2 == "Davankov + Spoiled",
+                                          na.rm = T),
+                                      " countries"), 
+                               paste0("Putin,\n", 
+                                      sum(merged_world$result2 == "Putin", na.rm = T),
+                                      " countries")),
+                    values = c("#9BCF53", "#bf212f"), 
+                    na.value = "grey", na.translate = FALSE) +
+  labs(title = "Results of 2024 Russian Presidental election abroad",
+       subtitle = "Average percent of votes by country, which candidate has more",
+       fill = "Who has more votes?",
+       caption = "\nSources: Ivan Shukshin's Telegram channel - t.me/nevybory,\nCentral Election Commission of the Russian Federation\n\nNote: Abkhazia and South Osetia not shown") +
+  theme_void()+
+  theme(legend.position = "bottom") +
+  coord_sf(ylim = c(-55, 90))
+```
+
+```{r}
+#| labels: percentages visualisation
+
+merged_world |> 
+  mutate(putin_bins = cut(putin_full*100, c(0, 25, 50, 75, 100))) |> 
+  ggplot(aes(fill = putin_bins)) +
+    geom_sf() +
+    scale_fill_manual(values = 
+                        c("#1984c5", "#63bff0", "#de6e56", "#bf212f"),
+                      na.translate = F) +
+    labs(title = "Results of 2024 Russian Presidental election abroad",
+         subtitle = "Average percent of votes by country for Putin",
+         fill = "% of votes",
+         caption = "\nSources: Ivan Shukshin's Telegram channel - t.me/nevybory,\nCentral Election Commission of the Russian Federation\n\nNote: Abkhazia and South Osetia not shown") +
+    theme_void() +
+    coord_sf(ylim = c(-55, 90))
+  
+  
+merged_world |> 
+  mutate(davankov_bins = cut((davankov_full + spoiled_full) *100, 
+                             c(0, 25, 50, 75, 100))) |> 
+  ggplot(aes(fill = davankov_bins)) +
+  geom_sf() +
+  scale_fill_manual(values = 
+                      c("#1984c5", "#63bff0", "#de6e56", "#bf212f"),
+                    na.translate = F) +
+  labs(title = "Results of 2024 Russian Presidental election abroad",
+         subtitle = "Average percent of votes by country for Davankov + spoiled ballots",
+       fill = "% of votes",
+       caption = "\nSources: Ivan Shukshin's Telegram channel - t.me/nevybory,\nCentral Election Commission of the Russian Federation\n\nNote: Abkhazia and South Osetia not shown") +
+  theme_void() +
+  coord_sf(ylim = c(-55, 90))
+```
+

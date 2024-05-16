@@ -1,0 +1,79 @@
+"0","#| label: multinomial naive estimation"
+"0","#| results: hide"
+"0",""
+"0","m2.naive <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour"
+"0","                      + out_of_Russia_time + result_trust_bin, "
+"0","                      data = model_data)"
+"1","# weights: "
+"1"," "
+"1","98"
+"1"," ("
+"1",""
+"1","78"
+"1",""
+"1"," variable)
+"
+"1","initial  value 105326.278638 
+"
+"1","iter  10 value 52948.964367
+"
+"1","iter  20 value 50721.906572
+"
+"1","iter  30 value 46679.562600
+"
+"1","iter  40 value 45611.692028
+"
+"1","iter  50 value 44953.630786
+"
+"1","iter  60 value 44622.266178
+"
+"1","iter  70 value 44470.604313
+"
+"1","iter  80 value 44352.877693
+"
+"1","iter  90 value 44290.653934
+"
+"1","iter 100 value 44270.160787
+"
+"1","final  value 44270.160787 
+"
+"1","stopped after 100 iterations
+"
+"0","m2.fe <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour"
+"0","                  + out_of_Russia_time + result_trust_bin + as.factor(voting_station), "
+"0","                      data = model_data)"
+"1","# weights: "
+"1"," "
+"1","546"
+"1"," ("
+"1",""
+"1","462"
+"1",""
+"1"," variable)
+"
+"1","initial  value 105326.278638 
+"
+"1","iter  10 value 52603.315239
+"
+"1","iter  20 value 49514.386048
+"
+"1","iter  30 value 47160.148536
+"
+"1","iter  40 value 45704.957805
+"
+"1","iter  50 value 44706.173705
+"
+"1","iter  60 value 44082.115418
+"
+"1","iter  70 value 43795.500791
+"
+"1","iter  80 value 43604.502405
+"
+"1","iter  90 value 43455.654674
+"
+"1","iter 100 value 43379.583764
+"
+"1","final  value 43379.583764 
+"
+"1","stopped after 100 iterations
+"

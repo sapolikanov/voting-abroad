@@ -1,0 +1,246 @@
+---
+title: "Voting abroad: analysis of 2024 Russian presidential election in immigrant communities"
+subtitle: "Presentation for AQMSS II" 
+format: 
+  beamer:
+    theme: Darmstadt
+    colortheme: lily
+    section-titles: false
+    fontsize: 9pt
+    titlegraphic: logo_uc3m.png
+execute: 
+  error: false
+  message: false
+---
+
+```{r}
+#| label: packages
+
+source(here::here("utilities", "check_packages.R"))
+```
+
+
+```{r}
+#| label: source vd
+#| include: false
+
+merged <- read_rds(here::here("data", "data_built", "data_built_.rds"))
+ep_raw_dep <- read_rds(here::here("data", "data_built", "ep_raw_dep.rds"))
+```
+
+# Introduction
+
+## Why should we care?
+
+\begin{itemize}
+	\item The right to vote abroad is a recent, non-universal and heterogeneous phenomenon (Collyer, 2013), still debated normatively (Bauböck, 2006)
+	\item Voters abroad are frequently misaligned with voters at home (Vintila et al, 2023; Battiston and Luconi, 2020; Szulecki et al, 2023)
+	\item Political participation in home-country affairs matters for identity:
+	\begin{itemize}
+		\item Migrant voter turnout is not determined by poor integration in the host society (Gherghina and Basarabă, 2024);
+		\item Studies emphasize homesickness and sense of belonging as motivators (Boccagni, 2011)
+	\end{itemize}
+	\item Very few studies explicitly linking voting abroad to political out-migration or voting in protest
+	\begin{itemize}
+		\item Autocracies generally extend voting rights to immigrants when they support the incumbent and restrict when they don't (Umpierrez de Reguero et al, 2021; Iams Wellman, 2020)
+	\end{itemize}
+\end{itemize}
+
+## Broadening the scope
+Russian data comes in handy for multiple reasons:
+\begin{itemize}
+	\item Broad international coverage
+	\item Unique multi-country exit poll with good by-station coverage
+	\item Comparable data from 2018 (also with exit poll)
+\end{itemize}
+\vspace{1em}
+These enable us to estimate:
+\begin{itemize}
+	\item Rough effects of war migration on the change in immigrant political preferences
+	\item Selection processes in countries with and without exit polls
+	\item Socio-economic determinants of external voting
+	\item Destination countries' features' effect on voting
+\end{itemize}
+
+# Empirical strategy
+
+## 
+
+\begin{block}{Data}
+\begin{itemize}
+	\item Central Election Committee results of the election by voting station:
+	\vspace{0.25em}
+	\begin{itemize}
+		\item 287 voting stations across 145 countries and 261 cities
+	\end{itemize}
+	\item Exit poll
+	\vspace{0.25em}
+	\begin{itemize}
+		\item Results - 65 voting stations (= cities) across 44 countries
+		\item Raw data - 69261 respondents in total
+		\vspace{0.25em}
+		\begin{itemize}
+			\item Sex, age, time out of Russia, time to reach voting station, trust in the result and vote choice
+		\end{itemize}
+	\end{itemize}
+	\item Other data sources for country-level characteristics
+\end{itemize}
+\end{block}
+\vspace{-1em}
+
+```{r}
+#| label: source dbld
+#| include: false
+
+world <- ne_countries(scale = "medium", returnclass = "sf") |> 
+  mutate(countrycode_c = countrycode(as.numeric(iso_n3_eh), origin = "iso3n",
+                                     destination = "iso3c"))
+
+merged_world <- merged |>
+  mutate(putin_full = if_else(countrycode_c == "TUR", putin_cec, putin_full),
+         davankov_full = if_else(countrycode_c == "TUR", davankov_cec, davankov_full),
+         spoiled_full = if_else(countrycode_c == "TUR", spoiled_cec, spoiled_full)) |> 
+  group_by(countryname_en, countryname_ru, countrycode_c, countrycode_n) |> 
+  filter(!countryname_ru %in% c("Абхазия", "Южная Осетия")) |> 
+  summarise(putin_full = mean(putin_full),
+            davankov_full = mean(davankov_full),
+            spoiled_full = mean(spoiled_full)) |> 
+  mutate(result = case_when(putin_full > 0.5 ~ "Putin",
+                            davankov_full > 0.5 ~ "Davankov",
+                            davankov_full <= 0.5 & putin_full <= 0.5 ~ "Second Round",
+                            .default = "Oops"),
+         result2 = case_when((davankov_full + spoiled_full) > putin_full
+                             ~ "Davankov + Spoiled",
+                             putin_full > (davankov_full + spoiled_full) ~ "Putin",
+                             putin_full == (davankov_full + spoiled_full) ~ "Tie",
+                             .default = "Oops"),
+         result3 = case_when(davankov_full > putin_full
+                             ~ "Davankov",
+                             putin_full > davankov_full ~ "Putin",
+                             putin_full == davankov_full ~ "Tie",
+                             .default = "Oops")) |> 
+  full_join(world, by = "countrycode_c") |>
+  st_as_sf()
+```
+
+```{r}
+#| label: results
+#| fig-height: 4
+#| fig-width: 10
+#| fig-align: left
+
+merged_world |> 
+  mutate(putin_bins = cut(putin_full*100, c(0, 25, 50, 75, 100))) |> 
+  ggplot(aes(fill = putin_bins)) +
+    geom_sf() +
+    scale_fill_manual(values = 
+                        c("#1984c5", "#63bff0", "#de6e56", "#bf212f"),
+                      na.translate = F) +
+    labs(title = "Results of 2024 Russian Presidental election abroad",
+         subtitle = "Average percent of votes by country for Putin",
+         fill = "% of votes",
+         # caption = "\nSources: Ivan Shukshin's Telegram channel - t.me/nevybory,\nCentral Election Commission of the Russian Federation\n\nNote: Abkhazia and South Osetia not shown"
+         ) +
+    theme_void() +
+    coord_sf(ylim = c(-55, 90))
+```
+
+## What we want to test
+
+Individual-level predictors
+	\begin{itemize}
+	  \item Focus on time of migration (before and after Crimea, after 2022)
+		\item Multinomial models (+ data imputation) and nested logit models
+	\end{itemize}
+Country-level predictors of vote shares
+	\begin{itemize}
+		\item Multi-level models with country-level predictors and aggregated voting station/country-level models
+		\item Military bases, offshore status, "unfriendly nations", cultural and physical (geoplolitical) distance to Russia
+	\end{itemize}
+Differences between previous and 2024 election results abroad 
+	\begin{itemize}
+		\item Cumulative effect of war, politization and migration
+	\end{itemize}
+Differences between exit poll and official results
+	\begin{itemize}
+		\item Ecological analysis for fraud possibilities
+	\end{itemize}
+
+# Individual level
+
+## Timing of migration
+
+```{r}
+ep_raw_dep |> 
+  filter(!countryname_en %in% c("Australia", "New Zealand")) |> 
+  group_by(out_of_Russia_time, vote) |> 
+  summarise(n = n()) |> 
+  mutate(pct = round(n/sum(n), 4),
+         lbl = if_else(pct < 0.1, NA, n),
+         out_of_Russia_time = factor(out_of_Russia_time,
+           levels = c("After invasion", "2 - 5 years", "After annexation",
+                      "Before annexation", "Tourist (lives in Russia)", "No Data"))) |> 
+  ggplot(aes(x = pct, y = out_of_Russia_time,
+             fill = reorder(vote, pct))) +
+    geom_bar(stat = "identity", color = "black", position = "fill") +
+    geom_text(aes(label = lbl), size = 3, position = position_stack(vjust = 0.5)) +
+    scale_fill_manual(values = c("#bf212f", "#872c76",  "#FFC374", "#7F9F80", 
+                                 "#bf212f", "#124076", "#b3c58b")) +
+    scale_x_continuous(limits = c(0, 1),
+                       breaks = seq(0, 1, 0.2), 
+                       labels = scales::label_number(scale = 100, suffix = "%")) +
+    labs(x = "\nShare of respondents",
+         y = "",
+         title = "Time living outside of Russia, adjusted and vote choice",
+         subtitle = "N = 68.593 with Australia and NZ excluded") +
+    theme_minimal()
+```
+
+## Missing data pattern
+
+```{r}
+
+ep_mice_prep <- ep_raw_dep |> 
+  select(
+    # Identificators and fixed effects
+    countryname_en, countrycode_c, countrycode_n, city_en, voting_station, 
+    # Variables to be imputed
+    vote, sex, age_bin, out_of_Russia_time, time_to_vs.less_than_hour, 
+    time_to_vs.more_than_4hours, result_trust_bin,
+    # Auxiallary variables
+    time_to_vs, result_trust) |> 
+  mutate(across(c(-vote), ~ as.factor(if_else(. %in% c("No Data",
+                                                       "Declined to answer"), 
+                                              NA, .))),
+         city_en = as.integer(city_en))
+
+labelled::var_label(ep_mice_prep) <- list(
+  vote = "Vote", sex = "Sex", age_bin = "Age", 
+  time_to_vs.more_than_4hours = "> 4 hours to vs\nvoting station",
+  time_to_vs.less_than_hour = "< 1 hour to\nvoting station",
+  out_of_Russia_time = "Out of Russia time",
+  result_trust_bin = "Trust - binary",
+  countryname_en = "Country")
+
+ep_mice_prep |> 
+  missing_pairs(dependent = "vote", 
+                explanatory = c("sex", "age_bin", 
+                                "time_to_vs.more_than_4hours",
+                                "time_to_vs.less_than_hour",
+                                "out_of_Russia_time",
+                                "result_trust_bin"),
+                position = "fill") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1),
+          strip.text.y = element_text(angle = 0))
+```
+
+# Hypotheses
+
+## Hypotheses
+
+\begin{itemize}
+	\item[$H_1$:] There are no substantive differences between demographic structure of those voting for the incumbent abroad and in Russia
+	\item[$H_2$:] Timing of migration as a proxy for average group-level political migration motives has a strong effect on voting choice
+	\item[$H_3$:] Share of 2024 vote predicted by previous elections varies with amount of political migration
+	\item[$Other$:] Country-level hypotheses still developing
+\end{itemize}

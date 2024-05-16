@@ -20,7 +20,7 @@
 \setbeamertemplate{bibliography item}{\insertbiblabel}	
 \setbeamertemplate{navigation symbols}{}
 
-\title[UC3M]{Persistence in social mobility}
+\title[UC3M]{Voting abroad: analysis of 2024 Russian presidential election in immigrant communities}
 \subtitle{\vspace{1em}\textit{Presentation for AQMSS II}}
 \author[AQMSS II]{Stepan Polikanov and Vera Okisheva}
 \date{}
@@ -34,10 +34,85 @@
 \titlepage
 \end{frame}
 
-
 \section{Introduction}
 
+\begin{frame}{Why should we care?}
+\begin{itemize}
+	\item The right to vote abroad is a recent, non-universal and heterogeneous phenomenon (Collyer, 2013), still debated normatively (Bauböck, 2006)
+	\item Voters abroad are frequently misaligned with voters at home (Vintila et al, 2023; Battiston and Luconi, 2020; Szulecki et al, 2023)
+	\item Political participation in home-country affairs matters for identity:
+	\begin{itemize}
+		\item Migrant voter turnout is not determined by poor integration in the host society (Gherghina and Basarabă, 2024);
+		\item Studies emphasize homesickness and sense of belonging as motivators (Boccagni, 2011)
+	\end{itemize}
+	\item Very few studies explicitly linking voting abroad to political out-migration or voting in protest
+	\begin{itemize}
+		\item Autocracies generally extend voting rights to immigrants when they support the incumbent and restrict when they don't (Umpierrez de Reguero et al, 2021; Iams Wellman, 2020)
+	\end{itemize}
+\end{itemize}
+\end{frame}
 
+	\begin{frame}{Broadening the scope}
+	Russian data comes in handy for multiple reasons:
+	\begin{itemize}
+		\item Broad international coverage
+		\item Unique multi-country exit poll with good by-station coverage
+		\item Comparable data from 2018 and comparable aggregated exit poll data for 2021
+	\end{itemize}
+	\vspace{1em}
+	These enable us to estimate:
+	\begin{itemize}
+		\item Rough effects of war migration on the change in immigrant political preferences
+		\item Selection processes in countries with and without exit polls
+		\item Socio-economic determinants of external voting
+		\item Destination countries' features' effect on voting
+	\end{itemize}
+	\end{frame}
 
+	\section{Empirical strategy}
+
+	\begin{frame}{Data}
+	\begin{itemize}
+		\item Central Election Committee results of the election by voting station:
+		\begin{itemize}
+			\item 287 voting stations across 145 countries and 261 cities
+		\end{itemize}
+		\item Exit poll
+		\begin{itemize}
+			\item 65 voting stations (= cities) across 44 countries
+		\end{itemize}
+		\item Exit poll raw data
+		\begin{itemize}
+			\item 69261 respondents in total
+			\begin{itemize}
+				\item Sex, age, time out of Russia, time to reach voting station, trust in the result and vote choice
+			\end{itemize}	
+		\end{itemize}
+		\item Other data sources for country-level characteristics
+	\end{itemize}
+	\end{frame}
+
+	\begin{frame}{What we want to test}
+	\begin{itemize}
+		\item Individual-level predictors, main interest - time of migration (before and after Crimea, after 2022)
+		\begin{itemize}
+			\item Multinomial models (+ data imputation) and nested logit models
+		\end{itemize}
+		\item Country-level predictors of vote shares
+		\begin{itemize}
+			\item Multi-level models with country-level predictors and aggregated voting station/country-level models
+			\item Military bases, offshore status, "unfriendly nations", cultural and physical (geoplolitical) distance to Russia
+		\end{itemize}
+		\item Differences between 2018 and 2024 presidential election results abroad 
+		\begin{itemize}
+			\item Cumulative effect of war, politization and migration
+			\item Models for strictly exit poll sample and the whole sample
+		\end{itemize}
+		\item Differences between exit poll and official results
+		\begin{itemize}
+			\item Ecological analysis for falsification possibilities
+		\end{itemize}
+	\end{itemize}
+	\end{frame}
 
 \end{document}

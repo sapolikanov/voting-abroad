@@ -1,0 +1,5 @@
+"0","datasummary_balance(~ ep, data = data_table4, stars = T)
+"
+"2","Warning:"
+"2"," Please install the `estimatr` package or set `dinm=FALSE` to suppress this warning.
+"

@@ -1,0 +1,5 @@
+"0","#| label: load models"
+"0",""
+"0","load(here(""scripts"", ""models"", ""feme_bobyqa.RData""))"
+"0","load(here(""scripts"", ""models"", ""nlme_bobyqa.RData""))"
+"0","load(here(""scripts"", ""models"", ""me_allfit.RData""))"

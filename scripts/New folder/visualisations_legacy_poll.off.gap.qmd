@@ -5,8 +5,8 @@ format: pdf
 
 
 ```{r}
-#| ;
-candidate_long <- ep_cn |> 
+#| 
+candidate_long <- merged |> 
     mutate(across(9:32, ~ if_else(is.na(.), 0, .)),
            across(c(spoiled_epalt = spoiled.abs_ep, 
                     putin_epalt = putin.abs_ep, 

@@ -1,4 +1,0 @@
-"0",""
-"0","ggmice(imp1, aes(time_to_vs.less_than_hour, vote)) +"
-"0","  geom_point(alpha = 0.1, size = 1) +"
-"0","  facet_wrap(~ countryname_en)"

@@ -1,0 +1,7 @@
+"0","#| label: Sample balance by whether Exit Poll was conducted or no"
+"0",""
+"0","datasummary_balance(~ ep, output = ""kableExtra"","
+"0","                    title = ""Sample balance by whether Exit Poll was conducted or no"","
+"0","                    data = data_table4, stars = T,"
+"0","                    dinm_statistic = ""p.value"") |> "
+"0","  kable_styling(latex_options = c(""scale_down"", ""hold_position""))"

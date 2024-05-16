@@ -1,0 +1,44 @@
+project:
+  title: "Voting Abroad"
+  output-dir: _products
+  execute-dir: project
+  pre-render: 
+    - utilities/check_packages.R
+    - utilities/functions.R
+    - utilities/remove_artifacts.ts 
+    - scripts/data_building/raw_data_prep.R
+    - scripts/data_building/data_building.R
+  render:
+    - scripts/individual_level/variables_descriptives.qmd
+    - scripts/individual_level/imputation.qmd
+    - scripts/individual_level/models.qmd
+    - scripts/country_level/models_country.qmd
+    - scripts/graphs/graphs.qmd
+    - presentation/presentation_quarto.qmd
+    - paper/paper.qmd
+    - "!bibliography/"
+
+author:
+  - name: Stepan Polikanov
+    orcid: 0000-0002-2329-2750
+    email: splknv.public@gmail.com
+    attributes:
+      corresponding: true
+    affiliations:
+      - name: Universidad Carlos III
+        department: Social Sciences
+        city: Madrid
+        country: Spain
+  - name: Vera Okisheva
+    attributes:
+      corresponding: false
+    affiliations:
+      - name: Universidad Carlos III
+        department: Social Sciences
+        city: Madrid
+        country: Spain
+  
+execute: 
+  freeze: false
+  
+editor: source

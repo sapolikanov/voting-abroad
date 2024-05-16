@@ -1,7 +1,0 @@
-"0","#| label: exportin"
-"0",""
-"0","## Detach all packages"
-"0","detachAllPackages()"
-"0",""
-"0","## Remove all objects not equal to ``ep_raw_clean``"
-"0","rm(list = setdiff(ls(), ""ep_raw_dep""))"
