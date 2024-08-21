@@ -15,6 +15,7 @@ packages = c(
   # Modelling
   "nnet", "nestedLogit", "performance", "see", "DHARMa",
   "lme4", "nlopt", "optimx", "numDeriv", "equatiomatic",
+  "mlogit",
   # Imputations
   "mice", "miceadds", "micemd",
   "finalfit"
@@ -23,7 +24,7 @@ packages = c(
 # Installing and loading packages
 package.check <- lapply(packages, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
-    renv::install(x, dependencies = "strong")
+    renv::install(x, dependencies = "most")
     library(x, character.only = TRUE)
   }
 })

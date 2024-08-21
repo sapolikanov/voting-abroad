@@ -61,6 +61,8 @@ model_data <- ep_raw_dep |>
          out_of_Russia_time = relevel(as.factor(out_of_Russia_time), ref = "Before annexation"),
          result_trust_bin = relevel(as.factor(result_trust_bin), ref = "Yes")) |> 
   filter(!countryname_en %in% c("New Zealand", "Australia"))
+
+mlogit_data <- dfidx(model_data, shape = "wide", choice = "vote")
 ```
 
 ```{r}
@@ -120,9 +122,32 @@ m2.naive <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour
                       + out_of_Russia_time + result_trust_bin, 
                       data = model_data)
 
+m2.naive.mlogit <- mlogit(vote ~ 0 | sex + age_bin + time_to_vs.less_than_hour
+                      + out_of_Russia_time + result_trust_bin, 
+                      data = mlogit_data, reflevel = "Putin")
+
+modelsummary(m2.naive.mlogit)
+
 m2.fe <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour
-                  + out_of_Russia_time + result_trust_bin + as.factor(voting_station), 
-                      data = model_data)
+                  + out_of_Russia_time + result_trust_bin
+                  + as.factor(voting_station), 
+                  data = model_data)
+```
+
+```{r}
+#| label: try to change the printing
+
+modelsummary(list("Naive" = m2.naive), stars = T, 
+             shape = term ~ response, coef_rename = T, 
+             output = "kableExtra") |> 
+  kable_styling(latex_options = c("scale_down"))
+coef(m2.fe)
+
+modelsummary(list("FE" = m2.fe), stars = T, 
+             shape = term ~ response, coef_rename = T, 
+             coef_omit = -1,
+             output = "kableExtra") |> 
+  kable_styling(latex_options = c("scale_down"))
 ```
 
 ```{r}
