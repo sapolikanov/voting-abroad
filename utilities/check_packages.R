@@ -9,7 +9,7 @@ packages = c(
   # Vizualisations
   "ggrepel", "ggmice", "qqplotr", "GGally", "marginaleffects",
   "kableExtra", "stargazer", "summarytools", "modelsummary",
-  "patchwork",
+  "estimatr", "patchwork",
   # Geospatial
   "rnaturalearth", "rnaturalearthdata", "sf", "classInt",
   # Modelling
@@ -23,7 +23,7 @@ packages = c(
 # Installing and loading packages
 package.check <- lapply(packages, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
-    install.packages(x, dependencies = TRUE)
+    renv::install(x, dependencies = "strong")
     library(x, character.only = TRUE)
   }
 })
