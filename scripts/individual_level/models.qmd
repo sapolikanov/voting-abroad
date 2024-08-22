@@ -61,8 +61,6 @@ model_data <- ep_raw_dep |>
          out_of_Russia_time = relevel(as.factor(out_of_Russia_time), ref = "Before annexation"),
          result_trust_bin = relevel(as.factor(result_trust_bin), ref = "Yes")) |> 
   filter(!countryname_en %in% c("New Zealand", "Australia"))
-
-mlogit_data <- dfidx(model_data, shape = "wide", choice = "vote")
 ```
 
 ```{r}
@@ -115,39 +113,74 @@ resizebox.stargazer(m1a.naive, m1b.naive, m1c.naive, m1d.naive, m1e.naive, m1f.n
 # Multinomial
 
 ```{r}
-#| label: multinomial naive estimation
+#| label: multinomial naive and fe estimation
 #| results: hide
 
 m2.naive <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour
-                      + out_of_Russia_time + result_trust_bin, 
-                      data = model_data)
-
-m2.naive.mlogit <- mlogit(vote ~ 0 | sex + age_bin + time_to_vs.less_than_hour
-                      + out_of_Russia_time + result_trust_bin, 
-                      data = mlogit_data, reflevel = "Putin")
-
-modelsummary(m2.naive.mlogit)
+                     + out_of_Russia_time + result_trust_bin, 
+                     data = model_data, model = F)
 
 m2.fe <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour
                   + out_of_Russia_time + result_trust_bin
                   + as.factor(voting_station), 
-                  data = model_data)
+                  data = model_data, model = F)
 ```
 
 ```{r}
 #| label: try to change the printing
 
+gc()
+
 modelsummary(list("Naive" = m2.naive), stars = T, 
-             shape = term ~ response, coef_rename = T, 
+             shape = term ~ response, 
+             coef_map = c("(Intercept)", "sexFemale" = "Sex: Female", 
+                          "sexOther" = "Sex: Other", 
+                          "age_bin18-24" = "Age: 18-24 (ref 25-44)", 
+                          "age_bin45-64" = "Age: 45-65 (ref 25-44)", 
+                          "age_bin65+" = "Age: 65 + (ref 25-44)", 
+                          "time_to_vs.less_than_hourYes" = 
+                            "Took < 1 hour to get to the voting station",
+                          "out_of_Russia_timeAfter invasion" = 
+                            "Moved after March 2022 (ref before 2014)", 
+                          "out_of_Russia_time2 - 5 years" = 
+                            "Moved after March 2019 but before March 2022 (ref before 2014)",
+                          "out_of_Russia_timeAfter annexation" =
+                            "Moved after March 2014 but before March 2019 (ref before 2014)",
+                          "out_of_Russia_timeTourist (lives in Russia)" =
+                            "Didn't move - tourist, lives in Russia (ref before 2014)",
+                          "result_trust_binDon't know" = 
+                            "Trust in the result: Don't know (ref Yes)",
+                          "result_trust_binNo" = 
+                            "Trust in the result: No (ref Yes)"), 
              output = "kableExtra") |> 
   kable_styling(latex_options = c("scale_down"))
-coef(m2.fe)
+
+gc()
 
 modelsummary(list("FE" = m2.fe), stars = T, 
-             shape = term ~ response, coef_rename = T, 
-             coef_omit = -1,
+             shape = term ~ response,
+             coef_map = c("(Intercept)", "sexFemale" = "Sex: Female", 
+                          "sexOther" = "Sex: Other", 
+                          "age_bin18-24" = "Age: 18-24 (ref 25-44)", 
+                          "age_bin45-64" = "Age: 45-65 (ref 25-44)", 
+                          "age_bin65+" = "Age: 65 + (ref 25-44)", 
+                          "time_to_vs.less_than_hourYes" = 
+                            "Took < 1 hour to get to the voting station",
+                          "out_of_Russia_timeAfter invasion" = 
+                            "Moved after March 2022 (ref before 2014)", 
+                          "out_of_Russia_time2 - 5 years" = 
+                            "Moved after March 2019 but before March 2022 (ref before 2014)",
+                          "out_of_Russia_timeAfter annexation" =
+                            "Moved after March 2014 but before March 2019 (ref before 2014)",
+                          "out_of_Russia_timeTourist (lives in Russia)" =
+                            "Didn't move - tourist, lives in Russia (ref before 2014)",
+                          "result_trust_binDon't know" = 
+                            "Trust in the result: Don't know (ref Yes)",
+                          "result_trust_binNo" = 
+                            "Trust in the result: No (ref Yes)"),
              output = "kableExtra") |> 
-  kable_styling(latex_options = c("scale_down"))
+  kable_styling(latex_options = c("scale_down")) |> 
+  save_kable(here("data", "data_built", "models_output", "multinom_m2_fe.pdf"))
 ```
 
 ```{r}

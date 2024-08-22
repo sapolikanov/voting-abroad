@@ -15,7 +15,6 @@ packages = c(
   # Modelling
   "nnet", "nestedLogit", "performance", "see", "DHARMa",
   "lme4", "nlopt", "optimx", "numDeriv", "equatiomatic",
-  "mlogit",
   # Imputations
   "mice", "miceadds", "micemd",
   "finalfit"
