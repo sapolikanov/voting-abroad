@@ -148,7 +148,7 @@ m5a.allfit <- allFit(m5a.nested, maxfun = 1e9)
 #| label: nested-logit-mixed-effects-m5a-answer-lvl2-diagnostics
 #| cache: true
 #| dependson: nested-logit-mixed-effects-m5a-answer-lvl2-allfit
-#| fig-height: 12
+#| fig-height: 10
 
 # Convergence results
   
@@ -163,13 +163,12 @@ m5a.allfit <- allFit(m5a.nested, maxfun = 1e9)
     distinct() |> 
     mutate(`Method` = if_else(lag(`Method`) != `Method` | is.na(lag(`Method`)), 
                               `Method`, ""),
-           `Estimation result` = str_replace_all(`Estimation result`,
-                                                 "|", " ")) |> 
-    kable(booktabs = T, 
+           `Estimation result` = gsub("\\|", " ", `Estimation result`)) |> 
+    kable(booktabs = T,
           caption = paste("Convergence results for Answer/non-Answer dichotomy,", 
                           "ME with level 2 variables and all optimizers")) |> 
-    column_spec(1, width = "7cm") |> 
-    kable_styling(latex_options = c("scale_down"))
+    column_spec(1, width = "8cm") |> 
+    column_spec(2, width = "8cm")
 
 # Log-Likelihoods
 (lliks <- sort(sapply(m5a.allfit_OK, logLik))) |> 
@@ -243,13 +242,10 @@ m5a.allfit <- allFit(m5a.nested, maxfun = 1e9)
 # threshold, I will use it.
 
 # Check m5a-specific diagnostics
-  
 # Gradient 1
   derivs1 <- m5a.nested@optinfo$derivs
   sc_grad1 <- with(derivs1, solve(Hessian, gradient))
-  max(abs(sc_grad1))
-  kable(max(pmin(abs(sc_grad1), abs(derivs1$gradient))), 
-        col.names = "Gradient, method 1", booktabs = T)
+  gradres1 <- max(pmin(abs(sc_grad1), abs(derivs1$gradient)))
 
 # Gradient 2
   dd <- update(m5a.nested, devFunOnly = TRUE)
@@ -257,14 +253,21 @@ m5a.allfit <- allFit(m5a.nested, maxfun = 1e9)
   grad2 <- grad(dd, pars)
   hess2 <- hessian(dd, pars)
   sc_grad2 <- solve(hess2, grad2)
-  kable(max(pmin(abs(sc_grad2), abs(grad2))), 
-        col.names = "Gradient, method 2", booktabs = T)
+  gradres2 <- max(pmin(abs(sc_grad2), abs(grad2)))
 
   ## The gradient cutoffs for Nelder Mead (nlopt), bobyqa and nlminwrap seem to 
   ## be close to what I am getting. 
 
 # Check for singular fit 
-kable(isSingular(m5a.nested), col.names = "Singular fit?")
+singres <- if_else(isSingular(m5a.nested), "Yes", "No")
+  
+# Display diagnostics
+kable(cbind(gradres1, gradres2, singres), 
+      booktabs = T, digits = 3,
+      col.names = c("Gradient, method I", "Gradient, method II", 
+                    "Singular fit?"),
+      caption = paste("Diagnostics for `Answer vs No answer to poll`", 
+                      "model (with preferred optimizer)"))
 ```
 
 The model doesn't converge. 
@@ -315,7 +318,7 @@ m5p.allfit <- allFit(m5p.nested, maxfun = 1e9)
 #| label: nested-logit-mixed-effects-m5p-putin-lvl2-diagnostics
 #| cache: true
 #| dependson: nested-logit-mixed-effects-m5p-putin-lvl2-allfit
-#| fig-height: 12
+#| fig-height: 10
 
 # Convergence results
   
@@ -329,12 +332,13 @@ m5p.allfit <- allFit(m5p.nested, maxfun = 1e9)
     arrange(`Method`, `Estimation result`) |> 
     distinct() |> 
     mutate(`Method` = if_else(lag(`Method`) != `Method` | is.na(lag(`Method`)), 
-                              `Method`, "")) |> 
-    kable(booktabs = T, 
+                              `Method`, ""),
+           `Estimation result` = gsub("\\|", " ", `Estimation result`)) |> 
+    kable(booktabs = T,
           caption = paste("Convergence results for Answer/non-Answer dichotomy,", 
                           "ME with level 2 variables and all optimizers")) |> 
-    column_spec(1, width = "7cm") |> 
-    kable_styling(latex_options = c("scale_down"))
+    column_spec(1, width = "8cm") |> 
+    column_spec(2, width = "8cm")
 
 # Log-Likelihoods
 (lliks <- sort(sapply(m5p.allfit_OK, logLik))) |> 
@@ -391,8 +395,8 @@ m5p.allfit <- allFit(m5p.nested, maxfun = 1e9)
               )
   
   ## Plot
-  ggplot(m5p.allfit.fixef.m[1:112, ], 
-           aes(x = `Coefficient`, y = `Method`, colour = `Method`)) +
+  ggplot(m5p.allfit.fixef.m, 
+         aes(x = `Coefficient`, y = `Method`, colour = `Method`)) +
       geom_point() +
       facet_wrap(~ `Variable`, scale = "free") +
       scale_colour_brewer(palette = "Dark2") +
@@ -408,9 +412,7 @@ m5p.allfit <- allFit(m5p.nested, maxfun = 1e9)
 # Gradient 1
   derivs1 <- m5p.nested@optinfo$derivs
   sc_grad1 <- with(derivs1, solve(Hessian, gradient))
-  max(abs(sc_grad1))
-  kable(max(pmin(abs(sc_grad1), abs(derivs1$gradient))), 
-        col.names = "Gradient, method 1", booktabs = T)
+  gradres1 <- max(pmin(abs(sc_grad1), abs(derivs1$gradient)))
 
 # Gradient 2
   dd <- update(m5p.nested, devFunOnly = TRUE)
@@ -418,14 +420,21 @@ m5p.allfit <- allFit(m5p.nested, maxfun = 1e9)
   grad2 <- grad(dd, pars)
   hess2 <- hessian(dd, pars)
   sc_grad2 <- solve(hess2, grad2)
-  kable(max(pmin(abs(sc_grad2), abs(grad2))), 
-        col.names = "Gradient, method 2", booktabs = T)
+  gradres2 <- max(pmin(abs(sc_grad2), abs(grad2)))
 
   ## The gradient cutoffs for Nelder Mead (nlopt), bobyqa and nlminwrap seem to 
   ## be close to what I am getting. 
 
 # Check for singular fit 
-kable(isSingular(m5p.nested), col.names = "Singular fit?") # Nope, no singular fit
+singres <- if_else(isSingular(m5p.nested), "Yes", "No")
+  
+# Display diagnostics
+kable(cbind(gradres1, gradres2, singres),
+      booktabs = T, digits = 3,
+      col.names = c("Gradient, method I", "Gradient, method II", 
+                    "Singular fit?"),
+      caption = paste("Diagnostics for `Putin vs Everyone", 
+                      "else` model (with preferred optimizer)"))
 ```
 
 ### Non-systemic v systemic opposition
@@ -522,6 +531,7 @@ m5d.allfit <- allFit(m5d.nested, maxfun = 1e9)
 #| label: nested_logit_mixed_effects_m5d_davankov_lvl2_diagnostics
 #| cache: true
 #| dependson: nested_logit_mixed_effects_m5d_davankov_lvl2_allfit
+#| fig-height: 10
 
 # Convergence results
   
@@ -535,12 +545,13 @@ m5d.allfit <- allFit(m5d.nested, maxfun = 1e9)
     arrange(`Method`, `Estimation result`) |> 
     distinct() |> 
     mutate(`Method` = if_else(lag(`Method`) != `Method` | is.na(lag(`Method`)), 
-                              `Method`, "")) |> 
-    kable(booktabs = T, 
+                              `Method`, ""),
+           `Estimation result` = gsub("\\|", " ", `Estimation result`)) |> 
+    kable(booktabs = T,
           caption = paste("Convergence results for Answer/non-Answer dichotomy,", 
-                          "ME with level 2 variables and all optimizers"))|> 
-    column_spec(1, width = "7cm") |> 
-    kable_styling(latex_options = c("scale_down"))
+                          "ME with level 2 variables and all optimizers")) |> 
+    column_spec(1, width = "8cm") |> 
+    column_spec(2, width = "8cm")
 
 # Log-Likelihoods
 (lliks <- sort(sapply(m5d.allfit_OK, logLik))) |> 
@@ -597,7 +608,7 @@ m5d.allfit <- allFit(m5d.nested, maxfun = 1e9)
               )
   
   ## Plot
-  ggplot(m5d.allfit.fixef.m[1:112, ], 
+  ggplot(m5d.allfit.fixef.m, 
            aes(x = `Coefficient`, y = `Method`, colour = `Method`)) +
       geom_point() +
       facet_wrap(~ `Variable`, scale = "free") +
@@ -614,9 +625,7 @@ m5d.allfit <- allFit(m5d.nested, maxfun = 1e9)
 # Gradient 1
   derivs1 <- m5d.nested@optinfo$derivs
   sc_grad1 <- with(derivs1, solve(Hessian, gradient))
-  max(abs(sc_grad1))
-  kable(max(pmin(abs(sc_grad1), abs(derivs1$gradient))), 
-        col.names = "Gradient, method 1", booktabs = T)
+  gradres1 <- max(pmin(abs(sc_grad1), abs(derivs1$gradient)))
 
 # Gradient 2
   dd <- update(m5d.nested, devFunOnly = TRUE)
@@ -624,18 +633,24 @@ m5d.allfit <- allFit(m5d.nested, maxfun = 1e9)
   grad2 <- grad(dd, pars)
   hess2 <- hessian(dd, pars)
   sc_grad2 <- solve(hess2, grad2)
-  kable(max(pmin(abs(sc_grad2), abs(grad2))), 
-        col.names = "Gradient, method 2", booktabs = T)
+  gradres2 <- max(pmin(abs(sc_grad2), abs(grad2)))
 
   ## The gradient cutoffs for Nelder Mead (nlopt), bobyqa and nlminwrap seem to 
   ## be close to what I am getting. 
 
 # Check for singular fit 
-kable(isSingular(m5d.nested), col.names = "Singular fit?") # Nope, no singular fit
+singres <- if_else(isSingular(m5d.nested), "Yes", "No")
+  
+# Display diagnostics
+kable(cbind(gradres1, gradres2, singres), 
+      booktabs = T, digits = 3,
+      col.names = c("Gradient, method I", "Gradient, method II", 
+                    "Singular fit?"),
+      caption = paste("Diagnostics for `Davankov vs Spoil the ballot`", 
+                      "model (with preferred optimizer)"))
 ```
 
 ```{r}
-#| eval: false
 
 save(list = c("m5a.nested", "m5p.nested", "m5s.nested", "m5s.red", "m5d.nested"), 
      file = "nlme_bobyqa.RData")
