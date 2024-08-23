@@ -32,7 +32,14 @@ source(here::here("utilities", "functions.R"))
 ```
 
 ```{r}
-#| label: load models
+#| label: load-data
+
+ep_raw_dep <- read_rds(here("data", "data_built", "ep_raw_dep.rds"))
+data_country <- read_rds(here("data", "data_built", "data_country.rds"))
+```
+
+```{r}
+#| label: load-models
 
 load(here("scripts", "models", "feme_bobyqa.RData"))
 load(here("scripts", "models", "nlme_bobyqa.RData"))
@@ -40,14 +47,7 @@ load(here("scripts", "models", "me_allfit.RData"))
 ```
 
 ```{r}
-#| label: source data
-
-ep_raw_dep <- read_rds(here("data", "data_built", "ep_raw_dep.rds"))
-data_country <- read_rds(here("data", "data_built", "data_country.rds"))
-```
-
-```{r}
-#| label: preparing data for naive regressions
+#| label: prep-naive
 
 # Recode no data back to native NA
 model_data <- ep_raw_dep |> 
@@ -64,61 +64,71 @@ model_data <- ep_raw_dep |>
 ```
 
 ```{r}
-#| label: binary outcomes
+#| label: prep-coefficient-labels
+
+coef_map_default <- c("(Intercept)", "sexFemale" = "Sex: Female", 
+                      "sexOther" = "Sex: Other", 
+                      "age_bin18-24" = "Age: 18-24 (ref 25-44)", 
+                      "age_bin45-64" = "Age: 45-65 (ref 25-44)", 
+                      "age_bin65+" = "Age: 65 + (ref 25-44)", 
+                      "time_to_vs.less_than_hourYes" = 
+                        "Took < 1 hour to get to the voting station",
+                      "out_of_Russia_timeAfter invasion" = 
+                        "Moved after March 2022 (ref before 2014)", 
+                      "out_of_Russia_time2 - 5 years" = 
+                        paste("Moved after March 2019 but before",
+                              "March 2022 (ref before 2014)"),
+                      "out_of_Russia_timeAfter annexation" =
+                        paste("Moved after March 2014 but before",
+                              "March 2019 (ref before 2014)"),
+                      "out_of_Russia_timeTourist (lives in Russia)" =
+                        paste("Didn't move - tourist, lives",
+                              "in Russia (ref before 2014)"),
+                      "result_trust_binDon't know" = 
+                        "Trust in the result: Don't know (ref Yes)",
+                      "result_trust_binNo" = 
+                        "Trust in the result: No (ref Yes)")
+```
+
+
+```{r}
+#| label: tbl-linear-dummy
+#| tbl-cap: "Binary outcomes, linear models, naive approach"
 #| results: asis
 
-m1a.naive <- glm(vote_putin ~ sex + age_bin + time_to_vs.less_than_hour
-                 + out_of_Russia_time + result_trust_bin, 
-                 data = model_data, family = "binomial")
-
-m1b.naive <- lm(vote_declined ~ sex + age_bin + time_to_vs.less_than_hour
-               + out_of_Russia_time + result_trust_bin, 
-               data = model_data)
-
-m1c.naive <- lm(vote_putin_declined ~ sex + age_bin + time_to_vs.less_than_hour
-               + out_of_Russia_time + result_trust_bin, 
-               data = model_data)
-
-m1d.naive <- lm(vote_davankov ~ sex + age_bin + time_to_vs.less_than_hour
-               + out_of_Russia_time + result_trust_bin, 
-               data = model_data)
-
-m1e.naive <- lm(vote_spoiled ~ sex + age_bin + time_to_vs.less_than_hour
-               + out_of_Russia_time + result_trust_bin, 
-               data = model_data)
-
-m1f.naive <- lm(vote_opposition ~ sex + age_bin + time_to_vs.less_than_hour
-               + out_of_Russia_time + result_trust_bin, 
-               data = model_data)
-
-resizebox.stargazer(m1a.naive, m1b.naive, m1c.naive, m1d.naive, m1e.naive, m1f.naive,  
-          title = "Binary outcomes, naive approach", header = F, 
-          dep.var.labels = c("Vote Putin", "Decline to Answer", 
-                             "Putin or Declined","Vote Davankov", "Spoil the ballot", 
-                             "Vote Davankov or spoil"),
-          covariate.labels = c(
-            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
-            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
-            "Took < 1 hour to get to the voting station",
-            "Moved after March 2022 (ref before 2014)", 
-            "Moved after March 2019 but before March 2022 (ref before 2014)",
-            "Moved after March 2014 but before March 2019 (ref before 2014)",
-            "Didn't move - tourist, lives in Russia (ref before 2014)",
-            "Trust in the result: Don't know (ref Yes)",
-            "Trust in the result: No (ref Yes)", "Intercept"),
-          tab.height = "\\textheight", tab.width= "\\textwidth"
-          )
+model_data |> 
+  pivot_longer(cols = c(vote_putin, vote_declined, vote_putin_declined,
+                        vote_davankov, vote_spoiled, vote_opposition)) |> 
+  nest(data = -name) |> 
+  transmute(m1.naive = map(data, 
+                        ~ lm(value ~ sex + age_bin + time_to_vs.less_than_hour
+                             + out_of_Russia_time + result_trust_bin,
+                             data = .))) |> 
+  deframe() |> 
+  set_names(c("Vote Putin", "Decline to Answer", "Putin or Declined", 
+              "Vote Davankov", "Spoil the ballot", "Vote Davankov or spoil")) |>
+  modelsummary(output = "kableExtra", vcov = "robust", stars = T,
+               gof_map = c("nobs", "adj.r.squared", "bic", "logLik", "rmse"),
+               coef_map = coef_map_default) |> 
+  kable_styling(latex_options = c("scale_down"))
 ```
 
 # Multinomial
 
 ```{r}
-#| label: multinomial naive and fe estimation
+#| label: models-multinom-naive
 #| results: hide
+#| cache: true
 
 m2.naive <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour
                      + out_of_Russia_time + result_trust_bin, 
                      data = model_data, model = F)
+```
+
+```{r}
+#| label: models-multinom-fe
+#| results: hide
+#| cache: true
 
 m2.fe <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour
                   + out_of_Russia_time + result_trust_bin
@@ -127,110 +137,41 @@ m2.fe <- multinom(vote ~ sex + age_bin + time_to_vs.less_than_hour
 ```
 
 ```{r}
-#| label: try to change the printing
+#| label: tbl-multinom-naive
+#| tbl-cap: "Multinomial regression, naive approach"
+#| results: hide
+#| cache: true
+#| dependson: models-multinom-naive
 
 gc()
 
-modelsummary(list("Naive" = m2.naive), stars = T, 
-             shape = term ~ response, 
-             coef_map = c("(Intercept)", "sexFemale" = "Sex: Female", 
-                          "sexOther" = "Sex: Other", 
-                          "age_bin18-24" = "Age: 18-24 (ref 25-44)", 
-                          "age_bin45-64" = "Age: 45-65 (ref 25-44)", 
-                          "age_bin65+" = "Age: 65 + (ref 25-44)", 
-                          "time_to_vs.less_than_hourYes" = 
-                            "Took < 1 hour to get to the voting station",
-                          "out_of_Russia_timeAfter invasion" = 
-                            "Moved after March 2022 (ref before 2014)", 
-                          "out_of_Russia_time2 - 5 years" = 
-                            "Moved after March 2019 but before March 2022 (ref before 2014)",
-                          "out_of_Russia_timeAfter annexation" =
-                            "Moved after March 2014 but before March 2019 (ref before 2014)",
-                          "out_of_Russia_timeTourist (lives in Russia)" =
-                            "Didn't move - tourist, lives in Russia (ref before 2014)",
-                          "result_trust_binDon't know" = 
-                            "Trust in the result: Don't know (ref Yes)",
-                          "result_trust_binNo" = 
-                            "Trust in the result: No (ref Yes)"), 
-             output = "kableExtra") |> 
+modelsummary(list("Naive approach" = m2.naive), 
+             output = "kableExtra",
+             stars = T, shape = term ~ response, 
+             coef_map = coef_map_default, 
+             gof_map = c("nobs", "adj.r.squared", "bic", "rmse")) |> 
   kable_styling(latex_options = c("scale_down"))
+```
+
+```{r}
+#| label: tbl-multinom-fe
+#| tbl-cap: "Multinomial regression, fixed effects"
+#| results: hide
+#| cache: true
+#| dependson: models-multinom-fe
 
 gc()
 
-modelsummary(list("FE" = m2.fe), stars = T, 
-             shape = term ~ response,
-             coef_map = c("(Intercept)", "sexFemale" = "Sex: Female", 
-                          "sexOther" = "Sex: Other", 
-                          "age_bin18-24" = "Age: 18-24 (ref 25-44)", 
-                          "age_bin45-64" = "Age: 45-65 (ref 25-44)", 
-                          "age_bin65+" = "Age: 65 + (ref 25-44)", 
-                          "time_to_vs.less_than_hourYes" = 
-                            "Took < 1 hour to get to the voting station",
-                          "out_of_Russia_timeAfter invasion" = 
-                            "Moved after March 2022 (ref before 2014)", 
-                          "out_of_Russia_time2 - 5 years" = 
-                            "Moved after March 2019 but before March 2022 (ref before 2014)",
-                          "out_of_Russia_timeAfter annexation" =
-                            "Moved after March 2014 but before March 2019 (ref before 2014)",
-                          "out_of_Russia_timeTourist (lives in Russia)" =
-                            "Didn't move - tourist, lives in Russia (ref before 2014)",
-                          "result_trust_binDon't know" = 
-                            "Trust in the result: Don't know (ref Yes)",
-                          "result_trust_binNo" = 
-                            "Trust in the result: No (ref Yes)"),
-             output = "kableExtra") |> 
-  kable_styling(latex_options = c("scale_down")) |> 
-  save_kable(here("data", "data_built", "models_output", "multinom_m2_fe.pdf"))
+modelsummary(list("Fixed Effects" = m2.fe),  
+             output = "kableExtra",
+             stars = T, shape = term ~ response, 
+             coef_map = coef_map_default, 
+             gof_map = c("nobs", "adj.r.squared", "bic", "rmse")) |> 
+  kable_styling(latex_options = c("scale_down"))
 ```
 
 ```{r}
-#| label: multinomial naive table
-#| results: asis
-#| cache: true
-
-resizebox.stargazer(m2.naive,
-          title = "Multinomial regression, naive approach", header = F,
-          covariate.labels = c(
-            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
-            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
-            "Took < 1 hour to get to the voting station",
-            "Moved after March 2022 (ref before 2014)", 
-            "Moved after March 2019 but before March 2022 (ref before 2014)",
-            "Moved after March 2014 but before March 2019 (ref before 2014)",
-            "Didn't move - tourist, lives in Russia (ref before 2014)",
-            "Trust in the result: Don't know (ref Yes)",
-            "Trust in the result: No (ref Yes)", "Intercept"),
-          add.lines = list(c("Fixed effects", rep("No", 6))),
-          tab.height = "\\textheight", tab.width= "\\textwidth"
-          )
-```
-
-```{r}
-#| label: multinomial fe table 
-#| results: asis
-#| cache: true
-
-resizebox.stargazer(m2.fe,
-          title = "Multinomial regression, fixed effects", 
-          omit = "factor",header = F,
-          covariate.labels = c(
-            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
-            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
-            "Took < 1 hour to get to the voting station",
-            "Moved after March 2022 (ref before 2014)", 
-            "Moved after March 2019 but before March 2022 (ref before 2014)",
-            "Moved after March 2014 but before March 2019 (ref before 2014)",
-            "Didn't move - tourist, lives in Russia (ref before 2014)",
-            "Trust in the result: Don't know (ref Yes)",
-            "Trust in the result: No (ref Yes)", "Intercept"),
-          add.lines = list(c("Fixed effects", rep("No", 6))),
-          tab.height = "\\textheight", tab.width= "\\textwidth"
-          )
-```
-
-
-```{r}
-#| label: nested logit naive
+#| label: prep-nested-logit
 
 comparisons <- logits(answer = dichotomy(answer = c("Davankov",
                                                     "Spoiled ballot",
@@ -249,30 +190,34 @@ comparisons <- logits(answer = dichotomy(answer = c("Davankov",
                       nonsystemic = c("Spoiled ballot", "Davankov"),
                       systemic = c("Haritonov", "Slutsky"))
 
-m3.nested <- nestedLogit(vote ~ sex + age_bin + time_to_vs.less_than_hour
-                          + out_of_Russia_time + result_trust_bin, 
-                          dichotomies = comparisons,
-                          data = model_data, 
-                          subset = model_data$vote != "Tore up/took"
-                         | !is.na(model_data$vote))
+```
+
+```{r}
+#| label: nested-logit
+
+m3.nested.naive <- nestedLogit(vote ~ sex + age_bin + time_to_vs.less_than_hour
+                               + out_of_Russia_time + result_trust_bin, 
+                               dichotomies = comparisons,
+                               data = model_data, 
+                               subset = model_data$vote != "Tore up/took"
+                                        | !is.na(model_data$vote))
 
 m3.nested.fe <- nestedLogit(vote ~ sex + age_bin + time_to_vs.less_than_hour
-                          + out_of_Russia_time + result_trust_bin + as.factor(voting_station), 
-                          dichotomies = comparisons,
-                          data = model_data, 
-                          subset = model_data$vote != "Tore up/took"
-                         | !is.na(model_data$vote))
+                            + out_of_Russia_time + result_trust_bin + as.factor(voting_station), 
+                            dichotomies = comparisons,
+                            data = model_data, 
+                            subset = model_data$vote != "Tore up/took"
+                            | !is.na(model_data$vote))
 
-save(list = c("m3.nested", "m3.nested.fe"), 
+save(list = c("m3.nested.naive", "m3.nested.fe"), 
      file = here("scripts", "models", "nl_fe.RData"))
 ```
 
 ```{r}
-#| label: nested logit tables
+#| label: tbl-nested-logit
 #| results: asis
-#| cache: true
 
-resizebox.stargazer(models(m3.nested), 
+resizebox.stargazer(models(m3.nested.naive), 
           title = "Nested Logit models", header = F,
           dep.var.labels = c("Don't answer vs answer", "Putin vs everyone", 
                              "Non-systemic vs systemic opposition",
@@ -315,7 +260,8 @@ resizebox.stargazer(models(m3.nested.fe),
 ## Nested Logit
 
 ```{r}
-#| label: prepare data for mixed logit
+#| label: prep-nested-logit-mixed-effects
+#| cache: true
 
 # Drop Australia and New Zealand for this because they have very skewed and low 
 # n observations. Might also help with convergence
@@ -341,11 +287,17 @@ nested_me_data <- model_data |>
 
 We fit the model consecutively for each dichotomy this time separating data by hand in the same way as the ``nestedLogit`` package does.
 
-For some models we get non-convergence. We diagnose which optimizers work fine in those case and update the model to achieve convergence.
+For some models we get non-convergence. We diagnose which optimizers work best in those case and update the model to achieve convergence.
 
 ```{r}
-#| label: mixed effects models - answer
-#| eval: false
+#| label: nested-logit-mixed-effects-m4a-answer
+#| cache: true
+#| dependson: prep-nested-logit-mixed-effects
+
+# Fit using all optimizers
+# m4.allfit <- allFit(m4a.nested)
+
+# bobyqa works so useit
 
 # Answer (1) vs non-answer (0)
 m4a.nested <- glmer(non_answer ~ sex + age_bin + time_to_vs.less_than_hour
@@ -353,22 +305,15 @@ m4a.nested <- glmer(non_answer ~ sex + age_bin + time_to_vs.less_than_hour
                     + (1 | countryname_en.x), 
                     data = nested_me_data, family = binomial,
                     control = glmerControl(optimizer = "bobyqa"))
-
-# Fit using all optimizers
-# m4.allfit <- allFit(m4a.nested)
-
-# bobyqa works so use that in the previous call (no reason to estimate it again 
-# for knitr destruction reasons)
-summary(m4a.nested)
 ```
 
 ### Not answer v answer
 
 ```{r}
-#| label: mixed effect models - answer level 2
-#| eval: false
+#| label: nested-logit-mixed-effects-m5a-answer-lvl2
+#| cache: true
 
-# Add second-level predicotrs
+# Add second-level predictors
 m5a.nested <- glmer(non_answer ~ sex + age_bin + time_to_vs.less_than_hour
                     + out_of_Russia_time + result_trust_bin
                     + orthodox_share + vdem_polyarchy_2022 
@@ -378,25 +323,28 @@ m5a.nested <- glmer(non_answer ~ sex + age_bin + time_to_vs.less_than_hour
                     data = nested_me_data, family = binomial,
                     control = glmerControl(optimizer = "bobyqa",
                                            optCtrl = list(maxfun = 1e9)))
-  # Doesn't converge
+
+# Doesn't converge
 ```
+
+The model doesn't converge. Check if we can achieve convergence with other optimizers.
 
 ```{r}
 #| label: mixed effects models - answer level 2 diagnostics
 #| cache: true
 
 derivs1 <- m5a.nested@optinfo$derivs
-sc_grad1 <- with(derivs1,solve(Hessian,gradient))
+sc_grad1 <- with(derivs1, solve(Hessian, gradient))
 max(abs(sc_grad1))
 
-max(pmin(abs(sc_grad1),abs(derivs1$gradient)))
+max(pmin(abs(sc_grad1), abs(derivs1$gradient)))
 
-dd <- update(m5a.nested,devFunOnly=TRUE)
-pars <- unlist(getME(m5a.nested,c("theta","fixef")))
-grad2 <- grad(dd,pars)
-hess2 <- hessian(dd,pars)
-sc_grad2 <- solve(hess2,grad2)
-max(pmin(abs(sc_grad2),abs(grad2)))
+dd <- update(m5a.nested, devFunOnly = TRUE)
+pars <- unlist(getME(m5a.nested, c("theta", "fixef")))
+grad2 <- grad(dd, pars)
+hess2 <- hessian(dd, pars)
+sc_grad2 <- solve(hess2, grad2)
+max(pmin(abs(sc_grad2), abs(grad2)))
 
 # Fit with all optimizers
 # m5a.allfit <- allFit(m5a.nested, maxfun = 1e9)

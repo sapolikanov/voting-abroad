@@ -1,8 +1,10 @@
 # Voting Abroad
 ## Data analysis of exit polls and official results of the 2024 Russian presidential election abroad
 
-This project is organized to be reproducible, following [reproducible research workflow from Aaron Gullickson](https://github.com/AaronGullickson/research-template). Below is a non-technical breakdown of the repository. 
+This project is organized to be reproducible, following [reproducible research workflow from Aaron Gullickson](https://github.com/AaronGullickson/research-template). 
 
+Some of the computaations in this project are computationally expensive. There are two ways in which this is tackled to aid reproducibility experience. The first one is caching, meaning that most models, printing of large text outputs and other expensive operations are cached on first render and then loaded from cache. Cache is not checked into the release. This means that when downloading a release version of the project and running  `quarto render` or (in Rstidio) going `Build -> Render Project` for the first time, the project will take a (very-very-very) long time and may exceed your machine's in-memory storage (RAM) or processing capabilities. 
+ 
 Raw data comes from data/data_raw folder. data/data_built is a folder with built datasets from data_raw. raw_data_prep.R and data_building.R are responsible for that - they live in scripts/data_building. data_built is fully wiped on project render only. Then there are quarto notebooks for different purposes. They are (in order of rendering):
 
 - individual_level/variables_descriptives.qmd, responsible for recoding exit poll questionnaire, broad data missingness diagnostics and some narrative as to what things mean

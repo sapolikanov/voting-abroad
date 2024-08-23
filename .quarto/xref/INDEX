@@ -28,5 +28,11 @@
   },
   "paper/paper.qmd": {
     "paper.tex": "d1fb3854"
+  },
+  "scripts/individual_level/simple_models.qmd": {
+    "simple_models.tex": "97db8577"
+  },
+  "scripts/individual_level/mixed_effects_models.qmd": {
+    "mixed_effects_models.tex": "04bb22cd"
   }
 }

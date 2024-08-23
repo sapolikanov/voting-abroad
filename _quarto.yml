@@ -11,7 +11,8 @@ project:
   render:
     - scripts/individual_level/variables_descriptives.qmd
     - scripts/individual_level/imputation.qmd
-    - scripts/individual_level/models.qmd
+    - scripts/individual_level/simple_models.qmd
+    - scripts/individual_level/mixed_effects_models.qmd
     - scripts/country_level/models_country.qmd
     - scripts/graphs/graphs.qmd
     - presentation/presentation_quarto.qmd
@@ -38,6 +39,6 @@ author:
         country: Spain
   
 execute: 
-  freeze: false
+  freeze: auto
   
 editor: source
