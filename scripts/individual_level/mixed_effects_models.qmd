@@ -707,9 +707,8 @@ coef_map_me <- c("(Intercept)", "sexFemale" = "Sex: Female",
 ```
 
 ```{r}
-#| label: mixed effects models - table 1
-#| results: asis
-#| tbl-cap: "Mixed effects models, level 1"
+#| label: tbl-results-me-1
+#| tbl-cap: "Mixed effects results, no level 2 variables"
 
 modelsummary(list("Declined to answer vs answer" = m4a.nested,
                   "Putin vs everyone else" = m4p.nested,
@@ -718,61 +717,64 @@ modelsummary(list("Declined to answer vs answer" = m4a.nested,
              output = "kableExtra", stars = T, 
              coef_map = coef_map_me) |> 
   kable_styling(latex_options = "scale_down")
+```
+
+```{r}
+#| label: tbl-results-me-2
+#| tbl-cap: "Comparison: logistic vs mixed effects models (no lvl 2 variables)"
 
 m3.answer <- models(m3.nested.fe, 1)
 m3.putin <- models(m3.nested.fe, 2)
 m3.nonsys <- models(m3.nested.fe, 3)
 m3.davankov <- models(m3.nested.fe, 4)
 
+modelsummary(list("Logistic" = m3.answer,
+                  "Mixed effects" = m4a.nested,
+                  "Logistic" = m3.putin,
+                  "Mixed effects" = m4p.nested,
+                  "Logistic" = m3.nonsys,
+                  "Mixed effects" = m4s.nested,
+                  "Logistic" = m3.davankov,
+                  "Mixed effects" = m4d.nested),
+             output = "kableExtra", stars = T, 
+             coef_map = coef_map_me) |> 
+  kable_styling(latex_options = "scale_down") |> 
+  add_header_above(c(" " = 1, "Answer vs No answer" = 2, 
+                     "Putin vs everyone else" = 2,
+                     "Non-systemic vs systemic opposition" = 2,
+                     "Davankov vs Spoiled" = 2))
+```
 
+```{r}
+#| label: tbl-results-me-3
+#| tbl-cap: "Mixed effects results, with level 2 variables"
 
-resizebox.stargazer(m4a.nested, m3.answer, m4p.nested, m3.putin, 
-          title = "Mixed effects models, comparison I", header = F,
-          omit = "as.factor",
-          dep.var.labels = c("Declined to answer vs answer", 
-                             "Declined to answer vs answer", 
-                             "Putin vs everyone else", 
-                             "Putin vs everyone else"
-                             ),
-          tab.height = "\\textheight", tab.width= "\\textwidth")
+modelsummary(list("Declined to answer vs answer" = m5a.nested,
+                  "Putin vs everyone else" = m5p.nested,
+                  "Non-systemic vs systemic opposition" = m5s.red,
+                  "Davankov vs Spoiled" = m5d.nested),
+             output = "kableExtra", stars = T, 
+             coef_map = coef_map_me) |> 
+  kable_styling(latex_options = "scale_down")
+```
 
-resizebox.stargazer(m4s.nested, m3.nonsys, m4d.nested, m3.davankov, 
-          title = "Mixed effects models, comparison II", header = F,
-          omit = "as.factor",
-          dep.var.labels = c("Non-systemic vs systemic opposition",
-                             "Non-systemic vs systemic opposition",
-                             "Davankov vs Spoiled",
-                             "Davankov vs Spoiled"
-                             ),
-          tab.height = "\\textheight", tab.width= "\\textwidth")
+```{r}
+#| label: tbl-results-me-4
+#| tbl-cap: "Comparison: mixed effects (no lvl 2) vs mixed effects models (with lvl 2)"
 
-resizebox.stargazer(m5a.nested, m5p.nested, m5s.red, m5d.nested, 
-          title = "Mixed effects models with level 2", header = F,
-          omit = "as.factor",
-          dep.var.labels = c("Declined to answer vs answer", 
-                             "Putin vs everyone else", 
-                             "Non-systemic vs systemic opposition",
-                             "Davankov vs Spoiled"
-                             ),
-          tab.height = "\\textheight", tab.width= "\\textwidth")
-
-resizebox.stargazer(m4a.nested, m5a.nested, m4p.nested, m5p.nested, 
-          title = "Mixed effects models with level 2, comparison I", header = F,
-          omit = "as.factor",
-          dep.var.labels = c("Declined to answer vs answer", 
-                             "Declined to answer vs answer", 
-                             "Putin vs everyone else", 
-                             "Putin vs everyone else"
-                             ),
-          tab.height = "\\textheight", tab.width= "\\textwidth")
-
-resizebox.stargazer(m4s.nested, m5s.red, m4d.nested, m5d.nested, 
-          title = "Mixed effects models with level 2, comparison II", header = F,
-          omit = "as.factor",
-          dep.var.labels = c("Non-systemic vs systemic opposition",
-                             "Non-systemic vs systemic opposition",
-                             "Davankov vs Spoiled",
-                             "Davankov vs Spoiled"
-                             ),
-          tab.height = "\\textheight", tab.width = "\\textwidth")
+modelsummary(list("No lvl 2" = m4a.nested,
+                  "With lvl 2" = m5a.nested,
+                  "No lvl 2" = m4p.nested,
+                  "With lvl 2" = m5p.nested,
+                  "No lvl 2" = m4s.nested,
+                  "With lvl 2" = m5s.red,
+                  "No lvl 2" = m4d.nested,
+                  "With lvl 2" = m5d.nested),
+             output = "kableExtra", stars = T, 
+             coef_map = coef_map_me) |> 
+  kable_styling(latex_options = "scale_down") |> 
+  add_header_above(c(" " = 1, "Answer vs No answer" = 2, 
+                     "Putin vs everyone else" = 2,
+                     "Non-systemic vs systemic opposition" = 2,
+                     "Davankov vs Spoiled" = 2))
 ```

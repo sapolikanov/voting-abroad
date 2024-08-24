@@ -49,3 +49,7 @@ po/*~
 rsconnect/
 
 /.quarto/
+feme_bobyqa.RData
+me_allfit.RData
+nlme_bobyqa.RData
+*.bcf-SAVE-ERROR
