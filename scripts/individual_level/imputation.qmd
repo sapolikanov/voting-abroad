@@ -167,6 +167,15 @@ imp1 <- futuremice(ep_mice_prep, method = c(
   parallelseed = 1, ncore = parallel::detectCores() - 1)
 ```
 
+```{r}
+#| label: save-imp1
+#| cache: true
+#| dependson: imp1
+
+save(imp1, file = here("data", "data_built", "imp1.RData"))
+```
+
+
 We first look at convergence. The trace plot shows that imputations mix for all variables nicely, which leads us to conclude that convergence is good!
 
 ```{r}
