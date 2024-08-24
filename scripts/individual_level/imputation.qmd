@@ -21,7 +21,6 @@ execute:
   warning: false
   error: false
   message: false
-  cache: true
 ---
 
 \section{Imputation}
@@ -29,13 +28,16 @@ execute:
 In this section we impute values for the dataset values on the individual level. The number of predictors for high-quality imputations is limited. 
 
 ```{r}
-#| label: packages
+#| label: setup
 
 source(here::here("utilities", "check_packages.R"))
+
+conflicts_prefer(dplyr::filter)
 ```
 
+
 ```{r}
-#| label: sourcing base dataframe
+#| label: load-data
 
 ep_raw_dep <- read_rds(here("data", "data_built", "ep_raw_dep.rds"))
 ```
@@ -44,7 +46,7 @@ We first select relevant variables. Note that we do not impute the "vote" variab
 
 
 ```{r}
-#| label: preparing data
+#| label: prep-data
 
 ep_mice_prep <- ep_raw_dep |> 
   select(
@@ -65,7 +67,7 @@ ep_mice_prep <- ep_raw_dep |>
 Upon examining the distributions of missingness, with x-axis indicating the variables and y-axis the missing dummies in them, it becomes apparent that the missingness is primarily dependent on the "Declined to answer" category of the vote question. This means that people that refused to disclose their choice of vote also didn't share their socio-demographic data. This means that we are unlikely to get unbiased  estimates for that category, or, indeed for its combination with the honest incumbent vote answers. 
 
 ```{r}
-#| label: missingness matrix
+#| label: plot-missingness-matrix
 
 labelled::var_label(ep_mice_prep) <- list(
   vote = "Vote", sex = "Sex", age_bin = "Age", 
@@ -102,7 +104,7 @@ ep_mice_prep |>
 There remain (very) significant differences between countries in terms of vote non-disclosure rates - from less than $1%$ to more than $60%$. This points to the relevancy of country-level characteristics, which are the main focus of this paper.
 
 ```{r}
-#| label: country-level differences
+#| label: plot-country-level-diff
 
 ep_mice_prep |> 
   filter(!countryname_en %in% c("New Zealand", "Australia")) |> 
@@ -134,7 +136,8 @@ We then set up the imputation itself. There are two id categorical variables for
 Apart from the variables we are imputing there are also two auxiliary variables - those are untransformed `result_trust` and `time_to_vs` variables. We have modified them when creating variables (in the `variables_descriptive` script), however for imputation we prefer to use untransformed (apart from NA definitions) versions that contain more information. We thus set these variables and not the modified ones as predictors in the imputation - this avoids collinearity in the models. On the other hand we disallow them to predict their modified variants - this avoids circularity in the predictions.
  
 ```{r}
-#| label: preparing first imputation
+#| label: prep-imp-1
+#| cache: true
 
 # Dry run
 imp1dry <- mice(ep_mice_prep, seed = 1, maxit = 0)
@@ -162,9 +165,9 @@ pred <- imp1dry$predictorMatrix
 ```
 
 ```{r}
-#| label: first imputation
-#| eval: false
-#| cache-lazy: false
+#| label: imp1
+#| cache: true
+#| dependson: prep-imp-1
 
 imp1 <- futuremice(ep_mice_prep, method = c(
   # Identificators
@@ -177,14 +180,10 @@ imp1 <- futuremice(ep_mice_prep, method = c(
   parallelseed = 1, ncore = parallel::detectCores() - 1)
 ```
 
-```{r}
-load(here("data", "data_raw", "imp1.RData"))
-```
-
 We first look at convergence. The trace plot shows that imputations mix for all variables nicely, which leads us to conclude that convergence is good!
 
 ```{r}
-#| label: exam - convergence
+#| label: plot-convergence-imp1
 
 plot_trace(imp1) +
   scale_color_manual(values = c("#b15268", "#69b040", "#9c49d6", "#c79830", 
@@ -198,7 +197,7 @@ plot_trace(imp1) +
 We then turn our attention to a probably most important issue with these imputations - those being the number of actual imputed values.
 
 ```{r}
-#| label: examination - result
+#| label: plot-results-imp1
 
 imp1_cmp <- complete(imp1, "long", include = T) |> 
   mutate(imputed = factor(if_else(`.imp` > 0, 1, 0), 
@@ -240,7 +239,7 @@ The number of values that the model imputes is very low - this is because if one
 Consider the following influx-outflux plot: the less informative variables are those with more missing values - but they also vary systematically by age and sex, so there is no way to model the latter correctly. 
 
 ```{r}
-#| label: flux
+#| label: plot-flux-imp1
 
 ep_mice_prep |> 
   select(-countrycode_c, -countrycode_n, -voting_station, -time_to_vs.more_than_4hours,
@@ -253,7 +252,7 @@ ep_mice_prep |>
 Lastly, it makes sense to examine the quality of the imputation. We plot the average share of each category across the 10 imputations performed against the distribution of observed values for each variable. The data is presented by country as we want to ensure that aggregations will be correct not only on the whole but also by country. 
 
 ```{r}
-#| label: results
+#| label: plot-balance-imp1
 
 # Sex
 imp1_cmp |> 

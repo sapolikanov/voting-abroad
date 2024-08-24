@@ -19,7 +19,6 @@ execute:
   warning: false
   error: false
   message: false
-  cache: true
 ---
 
 Disclaimer: most of this part was done as an answer to Problem Set 03 by Stepan Polikanov.
@@ -31,14 +30,15 @@ The goal of this part is to provide an in-depth look into variables created for 
 \section{Preparing individual-level data}
 
 ```{r}
-#| label: packages
-#| cache: false
+#| label: setup
 
 source(here::here("utilities", "check_packages.R"))
+
+conflicts_prefer(dplyr::filter)
 ```
 
 ```{r}
-#| label: sourcing base dataframe
+#| label: load-data
 
 ep_raw_clean <- read_rds(here("data", "data_built", "ep_raw_clean.rds"))
 ```

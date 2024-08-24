@@ -5,6 +5,7 @@
 source(here::here("scripts", "data_building", "raw_data_prep.R"))
 source(here::here("utilities","check_packages.R"))
   
+conflicts_prefer(dplyr::filter)
 # Data
   
   ## exit poll 18-03-24 11:21 CET

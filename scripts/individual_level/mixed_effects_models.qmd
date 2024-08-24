@@ -33,6 +33,8 @@ execute:
 
 source(here::here("utilities", "check_packages.R"))
 source(here::here("utilities", "functions.R"))
+
+conflicts_prefer(dplyr::filter)
 ```
 
 ```{r}

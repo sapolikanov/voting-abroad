@@ -2,7 +2,7 @@
 
 packages = c(
   # Data management
-  "here", "readxl", 
+  "here", "readxl", "conflicted", 
   # Wrangling
   "tidyverse", "lubridate", 
   "countrycode", "reshape2",

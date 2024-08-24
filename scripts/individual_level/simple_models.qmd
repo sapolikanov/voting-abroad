@@ -24,11 +24,13 @@ execute:
 ---
 
 ```{r}
-#| label: packages
+#| label: setup
 #| cache: false
 
 source(here::here("utilities", "check_packages.R"))
 source(here::here("utilities", "functions.R"))
+
+conflicts_prefer(dplyr::filter)
 ```
 
 ```{r}
@@ -202,44 +204,33 @@ save(list = c("m3.nested.naive", "m3.nested.fe"),
 ```
 
 ```{r}
-#| label: tbl-nested-logit
-#| results: asis
+#| label: tbl-nested-logit-naive
+#| tbl-cap: "Nested logit results, naive approach"
 
-resizebox.stargazer(models(m3.nested.naive), 
-          title = "Nested Logit models", header = F,
-          dep.var.labels = c("Don't answer vs answer", "Putin vs everyone", 
-                             "Non-systemic vs systemic opposition",
-                             "Spoiled vs Davankov", "Slutsky vs Haritonov"),
-          covariate.labels = c(
-            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
-            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
-            "Took < 1 hour to get to the voting station",
-            "Moved after March 2022 (ref before 2014)", 
-            "Moved after March 2019 but before March 2022 (ref before 2014)",
-            "Moved after March 2014 but before March 2019 (ref before 2014)",
-            "Didn't move - tourist, lives in Russia (ref before 2014)",
-            "Trust in the result: Don't know (ref Yes)",
-            "Trust in the result: No (ref Yes)", "Intercept"),
-          tab.height = "\\textheight", tab.width= "\\textwidth"
-          )
+models_m3.nested.naive <- models(m3.nested.naive, as.list = T)
+names(models_m3.nested.naive) <- c("Don't answer vs answer", "Putin vs everyone", 
+                                   "Non-systemic vs systemic opposition",
+                                   "Spoiled vs Davankov", "Slutsky vs Haritonov")
 
-resizebox.stargazer(models(m3.nested.fe), 
-          title = "Nested Logit models, fixed effects", header = F,
-          dep.var.labels = c("Don't answer vs answer", "Putin vs everyone", 
-                             "Non-systemic vs systemic opposition",
-                             "Spoiled vs Davankov", "Slutsky vs Haritonov"),
-          covariate.labels = c(
-            "Sex: Female", "Sex: Other", "Age: 18-24 (ref 25-44)", 
-            "Age: 45-65 (ref 25-44)", "Age: 65 + (ref 25-44)",
-            "Took < 1 hour to get to the voting station",
-            "Moved after March 2022 (ref before 2014)", 
-            "Moved after March 2019 but before March 2022 (ref before 2014)",
-            "Moved after March 2014 but before March 2019 (ref before 2014)",
-            "Didn't move - tourist, lives in Russia (ref before 2014)",
-            "Trust in the result: Don't know (ref Yes)",
-            "Trust in the result: No (ref Yes)", "Intercept"),
-          omit = "as.factor", 
-          tab.height = "\\textheight", tab.width= "\\textwidth"
-          )
+modelsummary(models_m3.nested.naive, 
+             output = "kableExtra", 
+             stars = T,
+             coef_map = coef_map_default) |> 
+  kable_styling(latex_options = c("scale_down"))
+```
+```{r}
+#| label: tbl-nested-logit-fe
+#| tbl-cap: "Nested logit results, fixed effects"
+
+models_m3.nested.fe <- models(m3.nested.fe, as.list = T)
+names(models_m3.nested.fe) <- c("Don't answer vs answer", "Putin vs everyone", 
+                                "Non-systemic vs systemic opposition",
+                                "Spoiled vs Davankov", "Slutsky vs Haritonov")
+
+modelsummary(models_m3.nested.fe, 
+             output = "kableExtra", 
+             stars = T,
+             coef_map = coef_map_default) |> 
+  kable_styling(latex_options = c("scale_down"))
 ```
 
