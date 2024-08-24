@@ -17,6 +17,9 @@ project:
     - scripts/graphs/graphs.qmd
     - presentation/presentation_quarto.qmd
     - paper/paper.qmd
+    
+metadata-files:
+  - _metadata.yml
 
 author:
   - name: Stepan Polikanov

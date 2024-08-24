@@ -2,20 +2,7 @@
 title: "Country-level analysis: models"
 subtitle: "Part of the final project for AQMSS II"
 author: "Polikanov Stepan and Okisheva Vera"
-format:
-  pdf:
-    fig-pos: "H"
-    fontsize: 11pt
-    highlight-style: kate
-    fig-width: 10
-    fig-height: 10
-    include-in-header:
-      - text: |
-          \addtokomafont{disposition}{\rmfamily} 
-          \AddToHook{env/Highlighting/begin}{\scriptsize} 
-          \usepackage{float} 
-          \usepackage[backend = biber, style = apa]{biblatex}
-          \addbibresource{project.bib}
+format: pdf
 embed-resources: true
 execute: 
   echo: true

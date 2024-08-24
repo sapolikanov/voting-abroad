@@ -1,18 +1,7 @@
 ---
 title: "Individual-level analysis: data preparation and descriptive statistics"
 subtitle: "Part of the final project for AQMSS II"
-format:
-  pdf:
-    fig-pos: "H"
-    fontsize: 11pt
-    highlight-style: kate
-    fig-width: 10
-    fig-height: 6
-    include-in-header:
-      - text: |
-          \addtokomafont{disposition}{\rmfamily} 
-          \AddToHook{env/Highlighting/begin}{\scriptsize} 
-          \usepackage{float} 
+format: pdf
 embed-resources: true
 execute: 
   echo: true

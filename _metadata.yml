@@ -1,0 +1,9 @@
+format: 
+  pdf:
+    fig-pos: "H"
+    fontsize: 11pt
+    highlight-style: breezedark
+    fig-width: 10
+    fig-height: 6
+    include-in-header:
+      - scripts/preamble.tex
