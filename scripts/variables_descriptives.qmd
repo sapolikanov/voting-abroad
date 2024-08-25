@@ -438,7 +438,6 @@ results1
 
 ```{r}
 #| label: exporting
-#| freeze: false
 
 # Save data
 

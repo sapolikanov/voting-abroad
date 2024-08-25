@@ -191,7 +191,6 @@ m3.nested.fe <- nestedLogit(vote ~ sex + age_bin + time_to_vs.less_than_hour
 
 ```{r}
 #| label: save-nested-logit
-#| freeze: false
 
 save(list = c("m3.nested.naive", "m3.nested.fe"), 
      file = here("data", "data_built", "nl_fe.RData"))

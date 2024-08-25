@@ -5,10 +5,10 @@ project:
   pre-render: 
     - utilities/check_packages.R
     - utilities/functions.R
-    - utilities/remove_artifacts.ts 
-    - scripts/raw_data_prep.R
-    - scripts/data_building.R
+    - utilities/remove_artifacts.ts
   render:
+    - scripts/raw_data_prep.qmd
+    - scripts/data_building.qmd
     - scripts/variables_descriptives.qmd
     - scripts/imputation.qmd
     - scripts/simple_models.qmd
@@ -39,8 +39,5 @@ author:
         department: Social Sciences
         city: Madrid
         country: Spain
-  
-execute: 
-  freeze: auto
   
 editor: source

@@ -49,7 +49,6 @@ po/*~
 rsconnect/
 
 /.quarto/
-feme_bobyqa.RData
-me_allfit.RData
-nlme_bobyqa.RData
-*.bcf-SAVE-ERROR
+
+# Built data (meant to be rebuilt for reproducibility)
+data/data_built/

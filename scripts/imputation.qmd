@@ -224,7 +224,6 @@ imp1_cmp |>
 
 ```{r}
 #| label: save-imp1
-#| freeze: false
 
 save(imp1_cmp, file = here("data", "data_built", "imp1.RData"))
 ```

@@ -86,7 +86,6 @@ m2s <- lm(spoiled_full ~ orthodox_share + vdem_polyarchy_2022
 
 ```{r}
 #| label: save-models-linear
-#| freeze: false
 
 save(list = c("m2p", "m2d", "m2s"), 
      file = here("data", "data_built", "lin.RData"))
