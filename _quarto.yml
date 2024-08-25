@@ -6,15 +6,14 @@ project:
     - utilities/check_packages.R
     - utilities/functions.R
     - utilities/remove_artifacts.ts 
-    - scripts/data_building/raw_data_prep.R
-    - scripts/data_building/data_building.R
+    - scripts/raw_data_prep.R
+    - scripts/data_building.R
   render:
-    - scripts/individual_level/variables_descriptives.qmd
-    - scripts/individual_level/imputation.qmd
-    - scripts/individual_level/simple_models.qmd
-    - scripts/individual_level/mixed_effects_models.qmd
-    - scripts/country_level/models_country.qmd
-    - scripts/graphs/graphs.qmd
+    - scripts/variables_descriptives.qmd
+    - scripts/imputation.qmd
+    - scripts/simple_models.qmd
+    - scripts/mixed_effects_models.qmd
+    - scripts/models_country.qmd
     - presentation/presentation_quarto.qmd
     - paper/paper.qmd
     

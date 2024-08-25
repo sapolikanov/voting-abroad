@@ -1,0 +1,154 @@
+---
+title: "Country-level analysis: models"
+subtitle: "Part of the final project for AQMSS II"
+author: "Polikanov Stepan and Okisheva Vera"
+format: pdf
+embed-resources: true
+execute: 
+  echo: true
+  warning: false
+  error: false
+  message: false
+---
+
+```{r}
+#| label: packages
+#| cache: false
+
+source(here::here("utilities", "check_packages.R"))
+source(here::here("utilities", "functions.R"))
+
+conflicts_prefer(dplyr::filter)
+```
+
+```{r}
+#| label: load-data
+
+data_country <- read_rds(here("data", "data_built", "data_country.rds"))
+```
+
+# Aggregated models
+
+We first run models aggregated to the country-level. This approach has an attractive feature of simplicity and the inability to run out of degrees of freedom. We aggregate to the country- rather than city- or voting station- level because the indicators and variables available to us were either available only at the country-level, are possible to measure only at the country-level (export and import for example) or are comparable only between countries. This means that we may miss some of the between-city variation in the data, however due to selection this is better addressed in the exit-poll sample choice models.
+
+## Selection into conducting exit polls
+
+As mentioned elsewhere, exit polls are not a representative sample of all voting stations abroad. As initiative that conducted them self-described as founded by "free people and independent activists from Russia living abroad". This means that this endeavor is easily labelled within the "non-systemic opposition" in Russia by both descriptive signals (civic engagement, control of elections to avoid electoral fraud and simply "activism") and scope of operation (WEIRD countries, mostly within OECD and popular Russian tourist or immigration spots such as Vietnam or Kazakhstan).
+
+To empirically confirm this we run regressions with an outcome denoting whether an exit poll was conducted at a voting station abroad. We relate this to variables that might affect migration choice as well as the baseline number of migrants in the country.
+
+```{r}
+#| label: models-linear-1
+#| fig-keep: 2
+
+m1 <- lm(ep ~ vdem_polyarchy_2022 + log(mad_gdppc_2018) + orthodox_share
+         + log(dist) + log(voters_in_list) + log(mean_trips), data = data_country)
+
+m1.log <- glm(ep ~ vdem_polyarchy_2022 + log(mad_gdppc_2018) + orthodox_share
+              + log(dist) + log(voters_in_list)+ log(mean_trips),
+              data = data_country, family = "binomial")
+
+summary(m1)
+summary(m1.log)
+
+check_m1.log <- plot(check_model(m1.log))
+check_m1.log[[4]] <- check_m1.log[[4]] + theme(axis.text.x = element_text(
+  angle = 45,hjust = 1)
+  )
+check_m1.log
+
+save(m1.log, file = here("data", "data_built", "m1_log.rds"))
+```
+
+
+## Vote shares
+
+As the dependent variables here are vote shares (percent, 0-100 for use of interpretation), we use a linear regression model. Here is the simplest model using our preferred variables. 
+
+```{r}
+#| label: models-linear-2
+
+m2p <- lm(putin_full ~ orthodox_share + vdem_polyarchy_2022 
+          + log(mad_gdppc_2018) + obl_type + export_share + import_share 
+          + friendly_status + help + military_dummy + log(dist) + log(mean_trips), 
+          data = data_country)
+
+m2d <- lm(davankov_full ~ orthodox_share + vdem_polyarchy_2022 
+          + log(mad_gdppc_2018) + obl_type + export_share + import_share 
+          + friendly_status + help + military_dummy + log(dist) + log(mean_trips), 
+          data = data_country)
+
+m2s <- lm(spoiled_full ~ orthodox_share + vdem_polyarchy_2022 
+          + log(mad_gdppc_2018) + obl_type + export_share + import_share 
+          + friendly_status + help + military_dummy + log(dist) + log(mean_trips), 
+          data = data_country)
+```
+
+```{r}
+#| label: save-models-linear
+#| freeze: false
+
+save(list = c("m2p", "m2d", "m2s"), 
+     file = here("data", "data_built", "lin.RData"))
+```
+
+
+```{r}
+#| label: prep-labels
+
+coef_map_lm <- c("(Intercept)",
+                 "orthodox_share" = "Share of Orthodox Christians",
+                 "vdem_polyarchy_2022" = "Polyarchy index",
+                 "log(mad_gdppc_2018)" = "GDP per capita (log)",
+                 "obl_type1" = "Military agreements: 1 (ref 0)",
+                 "obl_type2" = "Military agreements: 2 (ref 0)",
+                 "obl_type3" = "Military agreements: 3 (ref 0)",
+                 "obl_type4" = "Military agreements: 4 (ref 0)",
+                 "export_share" = "Export share",
+                 "import_share" = "Import share",
+                 "friendly_statusUnfriendly" = 
+                   "Unfriendly status (ref Neutral)",
+                 "friendly_statusFriendly" =
+                   "Friendly status (ref Neutral)",
+                 "help" = "Help to Ukraine",
+                 "military_dummy" = "Russian military presence",
+                 "log(dist)" = "Geodesic distance (log)")
+```
+
+```{r}
+#| label: tbl-models-linear-2
+#| tbl-cap: "Linear models for vote shares"
+
+modelsummary(list("Putin" = m2p, "Davankov" = m2d, "Spoiled" = m2s),
+             output = "kableExtra", 
+             stars = T, vcov = "robust",
+             coef_map = coef_map_lm) |> 
+  kable_styling(latex_options = c("scale_down"))
+```
+
+```{r}
+#| label: check-models-linear-2
+#| output: false
+
+check_m2p <- plot(check_model(m2p))
+check_m2p[[5]] <- check_m2p[[5]] + theme(axis.text.x = element_text(angle = 45,
+                                                                    hjust = 1))
+
+
+check_m2d <- plot(check_model(m2d))
+check_m2d[[5]] <- check_m2d[[5]] + theme(axis.text.x = element_text(angle = 45,
+                                                                    hjust = 1))
+                                                                    
+check_m2s <- plot(check_model(m2s))
+check_m2s[[5]] <- check_m2s[[5]] + theme(axis.text.x = element_text(angle = 45,
+                                                                    hjust = 1))
+
+```
+
+```{r}
+#| label: plot-check-models-linear-2
+
+check_m2p
+check_m2d 
+check_m2s
+```
