@@ -226,6 +226,7 @@ imp1_cmp |>
 #| label: save-imp1
 
 save(imp1_cmp, file = here("data", "data_built", "imp1.RData"))
+save(imp1_cmp, file = here("data", "models_norender", "imp1.RData"))
 ```
 
 The number of values that the model imputes is very low - this is because if one of the predictors contains missing values, the outcome of the imputation is also missing. There is essentially no way to correct for this issue with the data at hand - we are wary of deleting informative predictors from the imputation as the variables are already quite limited and it may lead to imprecise imputations. 

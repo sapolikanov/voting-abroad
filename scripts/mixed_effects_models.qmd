@@ -640,11 +640,20 @@ kable(cbind(gradres1, gradres2, singres),
 save(list = c("m5a.nested", "m5p.nested", "m5s.nested", "m5s.red", "m5d.nested"), 
      file = here("data", "data_built", "nlme_bobyqa.RData"))
 
+save(list = c("m5a.nested", "m5p.nested", "m5s.nested", "m5s.red", "m5d.nested"), 
+     file = here("data", "models_norender", "nlme_bobyqa.RData"))
+
 save(list = c("m4a.nested", "m4p.nested", "m4s.nested", "m4d.nested"), 
      file = here("data", "data_built", "feme_bobyqa.RData"))
 
+save(list = c("m5a.nested", "m5p.nested", "m5s.nested", "m5s.red", "m5d.nested"), 
+     file = here("data", "models_norender", "nlme_bobyqa.RData"))
+
 save(list = c("m5a.allfit", "m5p.allfit", "m5d.allfit"), 
      file = here("data", "data_built", "me_allfit.RData"))
+
+save(list = c("m5a.nested", "m5p.nested", "m5s.nested", "m5s.red", "m5d.nested"), 
+     file = here("data", "models_norender", "nlme_bobyqa.RData"))
 ```
 
 ```{r}
