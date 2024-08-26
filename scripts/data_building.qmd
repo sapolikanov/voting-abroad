@@ -21,6 +21,12 @@ source(here::here("utilities", "check_packages.R"))
 conflicts_prefer(dplyr::filter)
 ```
 
+In this script, data is imported from a variety of sources and processed to be used in the analysis. The data is stored in the `data/data_built` folder.
+
+I refer the reader to the main `paper/paper.qmd` file for the description of data sources. I provide minimal comments here.
+
+We start by loading the data.
+
 ```{r}
 #| label: load-data
 
@@ -103,6 +109,8 @@ conflicts_prefer(dplyr::filter)
                                      sheet = 3)
 ```
 
+Aggregate exit poll data is homogenized to be compatible with raw data from `raw_data_prep.qmd` and to have better-formated country- and city- (voting stations) names.
+
 ```{r}
 #| label: clean-exit-poll
 
@@ -131,6 +139,8 @@ conflicts_prefer(dplyr::filter)
            ep = 1)
   
 ```
+
+Raw data is aggregated to voting-station level. 
 
 ```{r}
 #| label: clean-exit-poll-raw
@@ -190,11 +200,14 @@ conflicts_prefer(dplyr::filter)
   
 ```
 
+This dictionary is needed for conversion between country names as provided by the Russian Ministry of Foreign  
+Affairs and those in the international code dictionary.
+
 ```{r}
 #| label: clean-uik-dictionary
 
   ## Convert countrynames in Russian provided by the Russian Ministry of Foreign  
-  ## Affairs to match with those int the international code dictionary
+  ## Affairs to match with those in the international code dictionary
   uik_dict_clean <- uik_dict |> 
     mutate(uik = as.character(uik), # For merges
            country_compatible = case_when(
@@ -245,6 +258,8 @@ conflicts_prefer(dplyr::filter)
               by = join_by("country_compatible" == "Country or Area"))
   
 ```
+
+Official results are modified to be compatible with exit poll data. Variable names are translated and the results are presented in shares and not percent.
 
 ```{r}
 #| label: clean-off-results
@@ -319,6 +334,8 @@ conflicts_prefer(dplyr::filter)
 
 ```
 
+Yandex data is not in fact used, but I retain this section for future potential. The data is an alternative to migration measures used in the paper.
+
 ```{r}
 #| label: clean-yandex
 
@@ -338,6 +355,8 @@ conflicts_prefer(dplyr::filter)
   
 ```
 
+Bilateral migration data is subset to years of interest, destination and origin.
+
 ```{r}
 #| label: clean-bilat-migration
   
@@ -351,6 +370,8 @@ conflicts_prefer(dplyr::filter)
                 values_from = mig_rate, names_prefix = "mig_rate_")
   
 ```
+
+The same is done for international migrant stock data.
 
 ```{r}
 #| label: clean-int-migrant-stock
@@ -370,6 +391,8 @@ conflicts_prefer(dplyr::filter)
            diff2020_2015 = (all_2020 - all_2010)/all_2015)
   
 ```
+
+I translate FSB country names to international country codes by hand due to data idionsyncracy. 
 
 ```{r}
 #| label: clean-fsb-migration
@@ -552,6 +575,8 @@ conflicts_prefer(dplyr::filter)
 # No Burundi, Central African Republic, Paraguay, Guinea-Bissau, North Macedonia
 ```
 
+Simple pre-processing (subsetting, countrycodes) is applied to religion data.
+
 ```{r}
 #| label: clean-religion
   
@@ -570,6 +595,8 @@ conflicts_prefer(dplyr::filter)
     drop_na(countrycode_n, countrycode_c)
   
 ```
+
+I select variables of interest from the QoG dataset and homogenize countrycodes.
 
 ```{r}
 #| label: clean-qog
@@ -591,6 +618,8 @@ conflicts_prefer(dplyr::filter)
     drop_na(countrycode_n, countrycode_c)
   
 ```
+
+I select variables of interest from the ATOP dataset and homogenize countrycodes.
 
 ```{r}
 #| label: clean-atop
@@ -619,6 +648,8 @@ conflicts_prefer(dplyr::filter)
                                 labels = c("0", "1", "2", "3", "4")))
 ```
 
+I rename and homogenize countrycodes in trade data.
+
 ```{r}
 #| label: clean-trade
 
@@ -643,6 +674,8 @@ conflicts_prefer(dplyr::filter)
     drop_na(countrycode_n, countrycode_c)
 ```
 
+The same is done with the geodesic distance data.
+
 ```{r}
 #| label: clean-geodist
 
@@ -656,6 +689,8 @@ conflicts_prefer(dplyr::filter)
     drop_na(countrycode_n, countrycode_c) |>
     select(countrycode_n, countrycode_c, dist, distcap, distw, distwces)
 ```
+
+I then merge all datasets sequentially (for ease of troubleshooting).
 
 ```{r}
 #| label: merge data
@@ -683,6 +718,8 @@ conflicts_prefer(dplyr::filter)
            slutsky_full = if_else(countrycode_c == "TUR", slutskiy_cec, slutsky_full),
            haritonov_full = if_else(countrycode_c == "TUR", haritonov_cec, haritonov_full))
 ```
+
+Since output data is at voting-station level, I aggregate to country-level in the next step. For some variables this means summing up the values, for others - taking the average and for some, retaining the constant.
 
 ```{r}
 #| label: aggregate to country-level
@@ -734,6 +771,8 @@ conflicts_prefer(dplyr::filter)
            davankov_dist = davankov_full - davankov_ep,
            spoiled_dist = spoiled_full - spoiled_ep)
 ```
+
+Lastly I export all resulting datasets.
 
 ```{r}
 #| label: save-data
