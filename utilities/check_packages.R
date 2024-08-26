@@ -14,7 +14,7 @@ packages = c(
   "rnaturalearth", "rnaturalearthdata", "sf", "classInt",
   # Modelling
   "nnet", "nestedLogit", "performance", "see", "DHARMa",
-  "lme4", "nlopt", "optimx", "numDeriv", "equatiomatic",
+  "lme4", "nlopt", "optimx", "numDeriv", "equatiomatic", "sandwich",
   # Imputations
   "mice", "miceadds", "micemd",
   "finalfit"
@@ -23,7 +23,7 @@ packages = c(
 # Installing and loading packages
 package.check <- lapply(packages, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
-    renv::install(x, dependencies = "most")
+    renv::install(x, dependencies = "strong")
     library(x, character.only = TRUE)
   }
 })
