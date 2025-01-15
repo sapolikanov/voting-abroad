@@ -10,6 +10,9 @@ execute:
   message: false
 ---
 
+\KOMAoptions{paper=landscape,pagesize}
+\recalctypearea
+
 ```{r}
 #| label: packages
 
